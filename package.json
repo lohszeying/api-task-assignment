@@ -6,7 +6,8 @@
     "build": "tsc",
     "dev": "tsx watch src/server.ts",
     "start": "npm run build && node dist/server.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "migrate": "tsx scripts/runMigrations.ts"
   },
   "keywords": [],
   "author": "",
