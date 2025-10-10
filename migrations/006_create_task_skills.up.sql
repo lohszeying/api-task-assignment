@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS task_skills (
   task_id UUID NOT NULL,
-  skill_id UUID NOT NULL,
+  skill_id INT NOT NULL,
   PRIMARY KEY (task_id, skill_id),
 
   CONSTRAINT fk_task_skill_task

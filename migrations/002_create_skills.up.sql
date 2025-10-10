@@ -3,8 +3,8 @@ BEGIN;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS skills (
-  skill_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  skill_name VARCHAR(255) NOT NULL
+  skill_id SERIAL PRIMARY KEY,
+  skill_name VARCHAR(255) NOT NULL UNIQUE
 );
 
 COMMIT;
