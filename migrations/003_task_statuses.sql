@@ -1,0 +1,10 @@
+BEGIN;
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE IF NOT EXISTS task_statuses (
+    status_id SERIAL PRIMARY KEY,
+    status_name VARCHAR(50) NOT NULL UNIQUE
+);
+
+COMMIT;
