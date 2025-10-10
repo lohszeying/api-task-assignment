@@ -8,7 +8,8 @@
     "start": "npm run build && node dist/server.js",
     "typecheck": "tsc --noEmit",
     "migrate:up": "tsx scripts/runMigrationsUp.ts",
-    "migrate:down": "tsx scripts/runMigrationsDown.ts"
+    "migrate:down": "tsx scripts/runMigrationsDown.ts",
+    "seed": "tsx scripts/runSeeds.ts"
   },
   "keywords": [],
   "author": "",
