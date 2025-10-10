@@ -18,7 +18,7 @@ export const getTasks = async (_req: Request, res: Response) => {
         status: true,
         developer: true
       },
-      orderBy: [{ title: 'asc' }]
+      orderBy: [{ createdAt: 'asc' }]
     });
 
     const taskMap = new Map<string, TaskSummary>();

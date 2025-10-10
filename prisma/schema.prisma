@@ -10,6 +10,8 @@ datasource db {
 model Developer {
   developerId   String            @id @map("developer_id") @db.Uuid @default(dbgenerated("uuid_generate_v4()"))
   developerName String            @map("developer_name")
+  createdAt     DateTime          @map("created_at") @default(now()) @db.Timestamptz
+  updatedAt     DateTime          @map("updated_at") @updatedAt @db.Timestamptz
   tasks         Task[]            @relation("DeveloperTasks")
   skills        DeveloperSkill[]
 
@@ -19,6 +21,8 @@ model Developer {
 model Skill {
   skillId          Int               @id @map("skill_id") @default(autoincrement())
   skillName        String            @map("skill_name")
+  createdAt        DateTime          @map("created_at") @default(now()) @db.Timestamptz
+  updatedAt        DateTime          @map("updated_at") @updatedAt @db.Timestamptz
   developerSkills  DeveloperSkill[]
   taskSkills       TaskSkill[]
 
@@ -29,6 +33,8 @@ model Skill {
 model TaskStatus {
   statusId Int    @id @map("status_id") @default(autoincrement())
   statusName String @map("status_name")
+  createdAt DateTime @map("created_at") @default(now()) @db.Timestamptz
+  updatedAt DateTime @map("updated_at") @updatedAt @db.Timestamptz
   tasks     Task[]
 
   @@unique([statusName])
@@ -41,6 +47,8 @@ model Task {
   statusId     Int      @map("status_id")
   developerId  String?  @map("developer_id")
   parentTaskId String?  @map("parent_task_id")
+  createdAt    DateTime @map("created_at") @default(now()) @db.Timestamptz
+  updatedAt    DateTime @map("updated_at") @updatedAt @db.Timestamptz
 
   status    TaskStatus @relation(fields: [statusId], references: [statusId])
   developer Developer? @relation("DeveloperTasks", fields: [developerId], references: [developerId])

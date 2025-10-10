@@ -1,11 +1,11 @@
 BEGIN;
 
-INSERT INTO task_statuses (status_id, status_name) VALUES
-  (1, 'Backlog'),
-  (2, 'Ready for development'),
-  (3, 'Testing'),
-  (4, 'PO Review'),
-  (5, 'Done')
+INSERT INTO task_statuses (status_id, status_name, created_at, updated_at) VALUES
+  (1, 'Backlog', TIMESTAMPTZ '2024-01-03 00:00:00+00', TIMESTAMPTZ '2024-01-03 00:00:00+00'),
+  (2, 'Ready for development', TIMESTAMPTZ '2024-01-03 00:00:01+00', TIMESTAMPTZ '2024-01-03 00:00:01+00'),
+  (3, 'Testing', TIMESTAMPTZ '2024-01-03 00:00:02+00', TIMESTAMPTZ '2024-01-03 00:00:02+00'),
+  (4, 'PO Review', TIMESTAMPTZ '2024-01-03 00:00:03+00', TIMESTAMPTZ '2024-01-03 00:00:03+00'),
+  (5, 'Done', TIMESTAMPTZ '2024-01-03 00:00:04+00', TIMESTAMPTZ '2024-01-03 00:00:04+00')
 ON CONFLICT (status_id) DO NOTHING;
 
 COMMIT;

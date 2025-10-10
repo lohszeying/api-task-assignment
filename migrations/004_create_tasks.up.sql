@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS tasks (
   status_id INT NOT NULL,
   developer_id UUID,
   parent_task_id UUID,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   CONSTRAINT fk_status
     FOREIGN KEY (status_id)

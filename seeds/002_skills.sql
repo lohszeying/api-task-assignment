@@ -1,8 +1,8 @@
 BEGIN;
 
-INSERT INTO skills (skill_id, skill_name) VALUES
-  (1, 'Frontend'),
-  (2, 'Backend')
+INSERT INTO skills (skill_id, skill_name, created_at, updated_at) VALUES
+  (1, 'Frontend', TIMESTAMPTZ '2024-01-02 00:00:00+00', TIMESTAMPTZ '2024-01-02 00:00:00+00'),
+  (2, 'Backend', TIMESTAMPTZ '2024-01-02 00:00:01+00', TIMESTAMPTZ '2024-01-02 00:00:01+00')
 ON CONFLICT (skill_id) DO NOTHING;
 
 COMMIT;

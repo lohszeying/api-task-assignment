@@ -1,10 +1,10 @@
 BEGIN;
 
-INSERT INTO developers (developer_id, developer_name) VALUES
-  ('537b1b67-b1b4-452f-96ad-8078044264b9', 'Alice'),
-  ('445a91f0-83bf-417c-8715-aac52a0fe9a8', 'Bob'),
-  ('aa9beae9-336d-46ce-aafb-74c88992a568', 'Carol'),
-  ('be54b438-4e63-4d41-9e89-cce388e28201', 'Dave')
+INSERT INTO developers (developer_id, developer_name, created_at, updated_at) VALUES
+  ('537b1b67-b1b4-452f-96ad-8078044264b9', 'Alice', TIMESTAMPTZ '2024-01-01 00:00:00+00', TIMESTAMPTZ '2024-01-01 00:00:00+00'),
+  ('445a91f0-83bf-417c-8715-aac52a0fe9a8', 'Bob', TIMESTAMPTZ '2024-01-01 00:00:01+00', TIMESTAMPTZ '2024-01-01 00:00:01+00'),
+  ('aa9beae9-336d-46ce-aafb-74c88992a568', 'Carol', TIMESTAMPTZ '2024-01-01 00:00:02+00', TIMESTAMPTZ '2024-01-01 00:00:02+00'),
+  ('be54b438-4e63-4d41-9e89-cce388e28201', 'Dave', TIMESTAMPTZ '2024-01-01 00:00:03+00', TIMESTAMPTZ '2024-01-01 00:00:03+00')
 ON CONFLICT (developer_id) DO NOTHING;
 
 COMMIT;
