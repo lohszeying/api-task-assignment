@@ -7,7 +7,8 @@
     "dev": "tsx watch src/server.ts",
     "start": "npm run build && node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "migrate": "tsx scripts/runMigrations.ts"
+    "migrate:up": "tsx scripts/runMigrationsUp.ts",
+    "migrate:down": "tsx scripts/runMigrationsDown.ts"
   },
   "keywords": [],
   "author": "",

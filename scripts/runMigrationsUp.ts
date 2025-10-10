@@ -53,7 +53,9 @@ const run = async () => {
     await ensureMigrationsTable();
 
     const files = await fs.readdir(MIGRATIONS_DIR);
-    const migrations = files.filter((file) => file.endsWith('.sql')).sort();
+    const migrations = files
+      .filter((file) => file.endsWith('.up.sql'))
+      .sort();
 
     if (migrations.length === 0) {
       console.log('No migrations found.');

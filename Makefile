@@ -1,5 +1,5 @@
 SHELL := /bin/sh
-.PHONY := help run run_dev start start_dev start_db stop run_migration
+.PHONY := help run run_dev start start_dev start_db stop run_migration_up run_migration_down
 .DEFAULT_GOAL := help
 
 PORT ?= 3000
@@ -12,7 +12,8 @@ help:
 	@echo "  make start           - Start API + Postgres via Docker (production build)"
 	@echo "  make start_dev       - Start API + Postgres via Docker with hot reload"
 	@echo "  make start_db        - Start only the Postgres container"
-	@echo "  make run_migration   - Apply pending SQL migrations"
+	@echo "  make run_migration_up   - Apply pending SQL migrations"
+	@echo "  make run_migration_down - Roll back the most recent migration"
 	@echo "  make stop            - Stop Docker containers"
 
 run: start_db
@@ -30,8 +31,11 @@ start_dev:
 start_db:
 	$(COMPOSE_PROJECT) up -d api_task_assignment_db
 
-run_migration: start_db
-	npm run migrate
+run_migration_up: start_db
+	npm run migrate:up
+
+run_migration_down: start_db
+	npm run migrate:down
 
 stop:
 	$(COMPOSE_PROJECT) down
