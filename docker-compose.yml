@@ -1,0 +1,35 @@
+services:
+  api_task_assignment:
+    build:
+      context: .
+      target: development
+    command: npm run dev
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      PORT: 3000
+      DB_HOST: api_task_assignment_db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: app_db
+    volumes:
+      - .:/app
+      - api-node-modules:/app/node_modules
+    depends_on:
+      - api_task_assignment_db
+
+  api_task_assignment_db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  api-node-modules:
+  pgdata:
