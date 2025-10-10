@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getDbHealth } from '../db/pool';
+import { getDbHealth } from '../db/client';
 
 export const getApiStatus = (_req: Request, res: Response) => {
   res.send('API is running!');

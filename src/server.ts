@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { createApp } from './app';
-import { pool, verifyDatabaseConnection } from './db/pool';
+import { shutdownDatabase, verifyDatabaseConnection } from './db/client';
 
 const port = Number(process.env.PORT || 3000);
 
@@ -22,7 +22,7 @@ const start = async () => {
   const shutdown = async () => {
     console.log('Shutting down server...');
     server.close();
-    await pool.end();
+    await shutdownDatabase();
     process.exit(0);
   };
 

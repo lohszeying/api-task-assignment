@@ -13,9 +13,10 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_NAME: task_assignment
+      DATABASE_URL: postgresql://postgres:postgres@api_task_assignment_db:5432/task_assignment
     volumes:
       - .:/app
-      - api-node-modules:/app/node_modules
+      - /app/node_modules
     depends_on:
       - api_task_assignment_db
 
@@ -31,5 +32,4 @@ services:
       - pgdata:/var/lib/postgresql/data
 
 volumes:
-  api-node-modules:
   pgdata:

@@ -3,16 +3,19 @@ WORKDIR /app
 
 FROM base AS deps
 COPY package*.json ./
+COPY prisma ./prisma
 RUN npm install
 
 FROM deps AS development
 ENV NODE_ENV=development
 COPY tsconfig.json ./
+COPY prisma ./prisma
 COPY src ./src
 CMD ["npm", "run", "dev"]
 
 FROM deps AS build
 COPY tsconfig.json ./
+COPY prisma ./prisma
 COPY src ./src
 RUN npm run build
 

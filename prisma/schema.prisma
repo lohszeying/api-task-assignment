@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Developer {
+  developerId   String            @id @map("developer_id") @db.Uuid @default(dbgenerated("uuid_generate_v4()"))
+  developerName String            @map("developer_name")
+  tasks         Task[]            @relation("DeveloperTasks")
+  skills        DeveloperSkill[]
+
+  @@map("developers")
+}
+
+model Skill {
+  skillId          Int               @id @map("skill_id") @default(autoincrement())
+  skillName        String            @map("skill_name")
+  developerSkills  DeveloperSkill[]
+  taskSkills       TaskSkill[]
+
+  @@unique([skillName])
+  @@map("skills")
+}
+
+model TaskStatus {
+  statusId Int    @id @map("status_id") @default(autoincrement())
+  statusName String @map("status_name")
+  tasks     Task[]
+
+  @@unique([statusName])
+  @@map("task_statuses")
+}
+
+model Task {
+  taskId       String   @id @map("task_id") @db.Uuid @default(dbgenerated("uuid_generate_v4()"))
+  title        String
+  statusId     Int      @map("status_id")
+  developerId  String?  @map("developer_id")
+  parentTaskId String?  @map("parent_task_id")
+
+  status    TaskStatus @relation(fields: [statusId], references: [statusId])
+  developer Developer? @relation("DeveloperTasks", fields: [developerId], references: [developerId])
+  parent    Task?      @relation("TaskHierarchy", fields: [parentTaskId], references: [taskId])
+  children  Task[]     @relation("TaskHierarchy")
+  skills    TaskSkill[]
+
+  @@map("tasks")
+}
+
+model DeveloperSkill {
+  developerId String @map("developer_id")
+  skillId     Int    @map("skill_id")
+
+  developer Developer @relation(fields: [developerId], references: [developerId])
+  skill     Skill     @relation(fields: [skillId], references: [skillId])
+
+  @@id([developerId, skillId])
+  @@map("developer_skills")
+}
+
+model TaskSkill {
+  taskId String @map("task_id")
+  skillId Int   @map("skill_id")
+
+  task  Task  @relation(fields: [taskId], references: [taskId])
+  skill Skill @relation(fields: [skillId], references: [skillId])
+
+  @@id([taskId, skillId])
+  @@map("task_skills")
+}
