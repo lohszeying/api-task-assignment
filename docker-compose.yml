@@ -12,7 +12,7 @@ services:
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: postgres
-      DB_NAME: app_db
+      DB_NAME: task_assignment
     volumes:
       - .:/app
       - api-node-modules:/app/node_modules
@@ -24,7 +24,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: app_db
+      POSTGRES_DB: task_assignment
     ports:
       - "5432:5432"
     volumes:
