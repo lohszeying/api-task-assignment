@@ -8,75 +8,80 @@ datasource db {
 }
 
 model Developer {
-  developerId   String            @id @map("developer_id") @db.Uuid @default(dbgenerated("uuid_generate_v4()"))
-  developerName String            @map("developer_name")
-  createdAt     DateTime          @map("created_at") @default(now()) @db.Timestamptz
-  updatedAt     DateTime          @map("updated_at") @updatedAt @db.Timestamptz
-  tasks         Task[]            @relation("DeveloperTasks")
+  developerId   String           @id @default(dbgenerated("uuid_generate_v4()")) @map("developer_id") @db.Uuid
+  developerName String           @map("developer_name") @db.VarChar(255)
+  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   skills        DeveloperSkill[]
+  tasks         Task[]           @relation("DeveloperTasks")
 
   @@map("developers")
 }
 
 model Skill {
-  skillId          Int               @id @map("skill_id") @default(autoincrement())
-  skillName        String            @map("skill_name")
-  createdAt        DateTime          @map("created_at") @default(now()) @db.Timestamptz
-  updatedAt        DateTime          @map("updated_at") @updatedAt @db.Timestamptz
-  developerSkills  DeveloperSkill[]
-  taskSkills       TaskSkill[]
+  skillId         Int              @id @default(autoincrement()) @map("skill_id")
+  skillName       String           @unique @map("skill_name") @db.VarChar(255)
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  developerSkills DeveloperSkill[]
+  taskSkills      TaskSkill[]
 
-  @@unique([skillName])
   @@map("skills")
 }
 
 model TaskStatus {
-  statusId Int    @id @map("status_id") @default(autoincrement())
-  statusName String @map("status_name")
-  createdAt DateTime @map("created_at") @default(now()) @db.Timestamptz
-  updatedAt DateTime @map("updated_at") @updatedAt @db.Timestamptz
-  tasks     Task[]
+  statusId   Int      @id @default(autoincrement()) @map("status_id")
+  statusName String   @unique @map("status_name") @db.VarChar(50)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tasks      Task[]
 
-  @@unique([statusName])
   @@map("task_statuses")
 }
 
 model Task {
-  taskId       String   @id @map("task_id") @db.Uuid @default(dbgenerated("uuid_generate_v4()"))
+  taskId       String      @id @default(dbgenerated("uuid_generate_v4()")) @map("task_id") @db.Uuid
   title        String
-  statusId     Int      @map("status_id")
-  developerId  String?  @map("developer_id")
-  parentTaskId String?  @map("parent_task_id")
-  createdAt    DateTime @map("created_at") @default(now()) @db.Timestamptz
-  updatedAt    DateTime @map("updated_at") @updatedAt @db.Timestamptz
-
-  status    TaskStatus @relation(fields: [statusId], references: [statusId])
-  developer Developer? @relation("DeveloperTasks", fields: [developerId], references: [developerId])
-  parent    Task?      @relation("TaskHierarchy", fields: [parentTaskId], references: [taskId])
-  children  Task[]     @relation("TaskHierarchy")
-  skills    TaskSkill[]
+  statusId     Int         @map("status_id")
+  developerId  String?     @map("developer_id") @db.Uuid
+  parentTaskId String?     @map("parent_task_id") @db.Uuid
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  skills       TaskSkill[]
+  developer    Developer?  @relation("DeveloperTasks", fields: [developerId], references: [developerId], onUpdate: NoAction, map: "fk_developer")
+  parent       Task?       @relation("TaskHierarchy", fields: [parentTaskId], references: [taskId], onDelete: Cascade, onUpdate: NoAction, map: "fk_parent_task")
+  children     Task[]      @relation("TaskHierarchy")
+  status       TaskStatus  @relation(fields: [statusId], references: [statusId], onUpdate: NoAction, map: "fk_status")
 
   @@map("tasks")
 }
 
 model DeveloperSkill {
-  developerId String @map("developer_id")
-  skillId     Int    @map("skill_id")
-
-  developer Developer @relation(fields: [developerId], references: [developerId])
-  skill     Skill     @relation(fields: [skillId], references: [skillId])
+  developerId String    @map("developer_id") @db.Uuid
+  skillId     Int       @map("skill_id")
+  developer   Developer @relation(fields: [developerId], references: [developerId], onDelete: Cascade, onUpdate: NoAction, map: "fk_dev_skill_developer")
+  skill       Skill     @relation(fields: [skillId], references: [skillId], onDelete: Cascade, onUpdate: NoAction, map: "fk_dev_skill_skill")
 
   @@id([developerId, skillId])
   @@map("developer_skills")
 }
 
 model TaskSkill {
-  taskId String @map("task_id")
-  skillId Int   @map("skill_id")
-
-  task  Task  @relation(fields: [taskId], references: [taskId])
-  skill Skill @relation(fields: [skillId], references: [skillId])
+  taskId  String @map("task_id") @db.Uuid
+  skillId Int    @map("skill_id")
+  skill   Skill  @relation(fields: [skillId], references: [skillId], onDelete: Cascade, onUpdate: NoAction, map: "fk_task_skill_skill")
+  task    Task   @relation(fields: [taskId], references: [taskId], onDelete: Cascade, onUpdate: NoAction, map: "fk_task_skill_task")
 
   @@id([taskId, skillId])
   @@map("task_skills")
+}
+
+model data_seeds {
+  id     String    @id
+  run_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model schema_migrations {
+  id     String    @id
+  run_at DateTime? @default(now()) @db.Timestamptz(6)
 }
