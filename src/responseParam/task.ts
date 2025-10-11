@@ -1,3 +1,5 @@
+import { StatusSummary } from "./status";
+
 interface TaskDeveloperSummary {
   developerId: string;
   developerName: string;
@@ -12,7 +14,7 @@ export interface TaskSummary {
   taskId: string;
   title: string;
   skills: TaskSkillSummary[];
-  status: string;
+  status: StatusSummary;
   developer?: TaskDeveloperSummary;
   subtasks?: TaskSummary[];
 }
@@ -20,13 +22,13 @@ export interface TaskSummary {
 interface TaskRelationSummary {
   taskId: string;
   title: string;
-  status: string;
+  status: StatusSummary;
 }
 
 export interface TaskDetails {
   taskId: string;
   title: string;
-  status: string;
+  status: StatusSummary;
   skills: string[];
   developer: TaskDeveloperSummary | null;
   parent?: TaskRelationSummary;

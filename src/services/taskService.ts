@@ -40,7 +40,7 @@ export const fetchTaskHierarchy = async (): Promise<TaskSummary[]> => {
         skillId,
         skillName: skill.skillName
       })),
-      status: task.status.statusName,
+      status: {statusId: task.status.statusId, statusName: task.status.statusName},
       developer: task.developer
         ? { developerId: task.developer.developerId, developerName: task.developer.developerName }
         : undefined
@@ -414,7 +414,7 @@ export const fetchTaskWithNeighbors = async (taskId: string): Promise<TaskDetail
   return {
     taskId: task.taskId,
     title: task.title,
-    status: task.status.statusName,
+    status: {statusId: task.status.statusId, statusName: task.status.statusName},
     skills: task.skills.map(({ skill }) => skill.skillName),
     developer: task.developer
       ? { developerId: task.developer.developerId, developerName: task.developer.developerName }
@@ -423,7 +423,7 @@ export const fetchTaskWithNeighbors = async (taskId: string): Promise<TaskDetail
       ? {
           taskId: task.parent.taskId,
           title: task.parent.title,
-          status: task.parent.status?.statusName ?? 'Unknown'
+          status: {statusId: task.status.statusId, statusName: task.status.statusName},
         }
       : undefined,
     children:
@@ -431,7 +431,7 @@ export const fetchTaskWithNeighbors = async (taskId: string): Promise<TaskDetail
         ? task.children.map((child) => ({
             taskId: child.taskId,
             title: child.title,
-            status: child.status?.statusName ?? 'Unknown'
+            status: {statusId: task.status.statusId, statusName: task.status.statusName}
           }))
         : undefined
   };
