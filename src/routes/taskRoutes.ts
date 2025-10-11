@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { getTasks } from '../controllers/taskController';
+import { getTasks, assignDeveloperToTask } from '../controllers/taskController';
 
 const router = Router();
 
 router.get('/', getTasks);
+router.patch('/:taskId/developer', assignDeveloperToTask);
 
 export default router;

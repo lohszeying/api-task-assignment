@@ -59,3 +59,70 @@ export const getTasks = async (_req: Request, res: Response) => {
     res.status(500).json({ message: 'Failed to fetch tasks' });
   }
 };
+
+export const assignDeveloperToTask = async (req: Request, res: Response) => {
+  const { taskId } = req.params;
+  const { developerId } = req.body as { developerId?: string };
+
+  if (!developerId || typeof developerId !== 'string' || developerId.trim().length === 0) {
+    return res.status(400).json({ message: 'developerId is required.' });
+  }
+
+  try {
+    const task = await prisma.task.findUnique({
+      where: { taskId },
+      include: {
+        skills: {
+          select: { skillId: true }
+        }
+      }
+    });
+
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found.' });
+    }
+
+    const requiredSkillIds = task.skills.map((skill) => skill.skillId);
+
+    if (requiredSkillIds.length === 0) {
+      await prisma.task.update({
+        where: { taskId },
+        data: { developerId }
+      });
+
+      return res.status(204).send();
+    }
+
+    const developer = await prisma.developer.findUnique({
+      where: { developerId },
+      include: {
+        skills: {
+          select: { skillId: true }
+        }
+      }
+    });
+
+    if (!developer) {
+      return res.status(404).json({ message: 'Developer not found.' });
+    }
+
+    const developerSkillIds = developer.skills.map((skill) => skill.skillId);
+    const hasAllSkills = requiredSkillIds.every((skillId) => developerSkillIds.includes(skillId));
+
+    if (!hasAllSkills) {
+      return res.status(400).json({
+        message: 'Developer does not have all skills required for this task.'
+      });
+    }
+
+    await prisma.task.update({
+      where: { taskId },
+      data: { developerId }
+    });
+
+    return res.status(204).send();
+  } catch (error) {
+    console.error('Failed to assign developer to task', error);
+    return res.status(500).json({ message: 'Failed to assign developer to task' });
+  }
+};

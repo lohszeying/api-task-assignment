@@ -1,14 +1,15 @@
 // Sample endpoints, can use REST Client extension on VS Code to run this, or run via curl / postman / etc.
 
 @baseUrl = http://localhost:3000
-@taskId = 60a7aa66-8eed-499b-be7f-78ac158d8094
+@taskId = 7a5e9113-bbe9-42cc-9ce5-f6035f77461e
 
 // Get skills
 GET {{baseUrl}}/skills
 
 ###
 // Get developers
-GET {{baseUrl}}/developers
+// Optional query parma: skill, eg. ?skill=1 or ?skill=1,2
+GET {{baseUrl}}/developers?skill=1
 
 ###
 // Get tasks
@@ -38,9 +39,17 @@ POST {{baseUrl}}/tasks/{{taskId}}
 // Update task's status
 // Have some constraints: If there is subtask, all the subtask (and nested subtasks) must be "Done" before this task can be Done.
 PATCH {{baseUrl}}/tasks/{{taskId}}/status
+{
+    "status": "1"
+}
 
 ###
-// Update task's assignee
+// Update task's assignee (developer)
 // Have some constraints: Task can only be assigned to assignee with skills(s) required by task.
 // Means, the task should have at least 1 skill assigned to it... Else throw error?
-PATCH {{baseUrl}}/tasks/{{taskId}}/assignee
+PATCH {{baseUrl}}/tasks/b24c93ca-338a-41e3-acd2-6920290a570b/developer
+content-type: application/json
+
+{
+    "developerId": "aa9beae9-336d-46ce-aafb-74c88992a568"
+}
