@@ -24,7 +24,6 @@ interface TaskSummary {
 interface TaskCreationPayload {
   title?: string;
   skills?: string[];
-  developerId?: string;
   subtasks?: TaskCreationPayload[];
 }
 
@@ -37,7 +36,6 @@ interface CreatedTaskResult {
   taskId: string;
   title: string;
   statusId: number;
-  developerId: string | null;
   skills: TaskSkillOutput[];
   subtasks?: CreatedTaskResult[];
 }
@@ -222,49 +220,10 @@ const createTaskRecursive = async (
     throw new HttpError(400, `Unknown skills: ${missingSkills.join(', ')}`);
   }
 
-  let developerId: string | null =
-    typeof payload.developerId === 'string' && payload.developerId.trim().length > 0
-      ? payload.developerId.trim()
-      : null;
-
-  if (developerId && matchedSkills.length === 0) {
-    throw new HttpError(400, 'Cannot assign a developer when skills are not specified.');
-  }
-
-  if (developerId) {
-    const developer = await tx.developer.findUnique({
-      where: { developerId },
-      include: {
-        skills: {
-          select: { skillId: true }
-        }
-      }
-    });
-
-    if (!developer) {
-      throw new HttpError(404, 'Developer not found.');
-    }
-
-    const requiredSkillIds = matchedSkills.map((record) => record.skillId);
-    const developerSkillIds = developer.skills.map((skill) => skill.skillId);
-
-    const hasAllSkills = requiredSkillIds.every((skillId) =>
-      developerSkillIds.includes(skillId)
-    );
-
-    if (!hasAllSkills) {
-      throw new HttpError(
-        400,
-        'Developer does not have all skills required for this task.'
-      );
-    }
-  }
-
   const task = await tx.task.create({
     data: {
       title,
       statusId: BACKLOG_STATUS_ID,
-      developerId,
       parentTaskId
     }
   });
@@ -301,7 +260,6 @@ const createTaskRecursive = async (
     taskId: task.taskId,
     title: task.title,
     statusId: task.statusId,
-    developerId: task.developerId ?? null,
     skills: matchedSkills.map(({ skillId, skillName }) => ({ skillId, skillName })),
     subtasks: subtaskResults.length > 0 ? subtaskResults : undefined
   };
