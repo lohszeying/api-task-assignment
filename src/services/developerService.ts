@@ -57,11 +57,29 @@ export const fetchDevelopers = async (
 
   const developers = await prisma.developer.findMany({
     where: whereClause,
+    select: {
+      developerId: true,
+      developerName: true,
+      skills: {
+        select: {
+          skill: {
+            select: {
+              skillId: true,
+              skillName: true
+            }
+          }
+        }
+      }
+    },
     orderBy: { developerName: 'asc' }
   });
 
-  return developers.map(({ developerId, developerName }) => ({
+  return developers.map(({ developerId, developerName, skills }) => ({
     developerId,
-    developerName
+    developerName,
+    skills: skills.map(({ skill }) => ({
+      skillId: skill.skillId,
+      skillName: skill.skillName
+    }))
   }));
 };
