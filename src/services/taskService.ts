@@ -6,54 +6,17 @@ import {
   TaskDescriptor
 } from '../client/geminiClient';
 import { HttpError } from './errors';
+import type { CreatedTaskResult, TaskDetails, TaskSummary } from '../responseParam/task';
 
 enum TaskStatusIds {
   Backlog = 1,
   Done = 5
 }
 
-export interface DeveloperSummary {
-  name: string;
-  id: string;
-}
-
-export interface TaskSummary {
-  taskId: string;
-  title: string;
-  skills: string[];
-  status: string;
-  developer?: DeveloperSummary;
-  subtasks?: TaskSummary[];
-}
-
-export interface TaskSkillOutput {
-  skillId: number;
-  skillName: string;
-}
-
-export interface TaskDetails {
-  taskId: string;
-  title: string;
-  status: string;
-  skills: string[];
-  developer?: { id: string; name: string } | null;
-  parent?: { taskId: string; title: string; status: string };
-  children?: Array<{ taskId: string; title: string; status: string }>;
-}
-
 export interface TaskCreationPayload {
   title?: string;
   skills?: string[];
   subtasks?: TaskCreationPayload[];
-}
-
-export interface CreatedTaskResult {
-  taskId: string;
-  title: string;
-  statusId: number;
-  skills: TaskSkillOutput[];
-  developerId: string | null;
-  subtasks?: CreatedTaskResult[];
 }
 
 export const fetchTaskHierarchy = async (): Promise<TaskSummary[]> => {
@@ -73,10 +36,13 @@ export const fetchTaskHierarchy = async (): Promise<TaskSummary[]> => {
     taskMap.set(task.taskId, {
       taskId: task.taskId,
       title: task.title,
-      skills: task.skills.map(({ skill }) => skill.skillName),
+      skills: task.skills.map(({ skillId, skill }) => ({
+        skillId,
+        skillName: skill.skillName
+      })),
       status: task.status.statusName,
       developer: task.developer
-        ? { name: task.developer.developerName, id: task.developer.developerId }
+        ? { developerId: task.developer.developerId, developerName: task.developer.developerName }
         : undefined
     });
   }
@@ -451,7 +417,7 @@ export const fetchTaskWithNeighbors = async (taskId: string): Promise<TaskDetail
     status: task.status.statusName,
     skills: task.skills.map(({ skill }) => skill.skillName),
     developer: task.developer
-      ? { id: task.developer.developerId, name: task.developer.developerName }
+      ? { developerId: task.developer.developerId, developerName: task.developer.developerName }
       : null,
     parent: task.parent
       ? {

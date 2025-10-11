@@ -1,5 +1,6 @@
 import { prisma } from '../db/client';
 import { HttpError } from './errors';
+import type { DeveloperListItem } from '../responseParam/developer';
 
 const parseSkillParam = (skillParam: unknown): number[] => {
   if (skillParam === undefined || skillParam === null) {
@@ -38,7 +39,9 @@ const parseSkillList = (value: string): number[] => {
   return ids;
 };
 
-export const fetchDevelopers = async (skillParam: unknown) => {
+export const fetchDevelopers = async (
+  skillParam: unknown
+): Promise<DeveloperListItem[]> => {
   const skillIds = parseSkillParam(skillParam);
 
   const whereClause =
@@ -62,4 +65,3 @@ export const fetchDevelopers = async (skillParam: unknown) => {
     developerName
   }));
 };
-
