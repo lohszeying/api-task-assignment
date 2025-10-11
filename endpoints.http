@@ -1,0 +1,14 @@
+// Sample endpoints, can use REST Client extension on VS Code to run this, or run via curl / postman / etc.
+
+@baseUrl = http://localhost:3000
+
+// Get skills
+GET {{baseUrl}}/skills
+
+###
+// Get developers
+GET {{baseUrl}}/developers
+
+###
+// Get tasks
+GET {{baseUrl}}/tasks
