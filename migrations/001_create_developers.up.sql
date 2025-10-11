@@ -9,4 +9,6 @@ CREATE TABLE IF NOT EXISTS developers (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX IF NOT EXISTS idx_developers_name ON developers (developer_name);
+
 COMMIT;
