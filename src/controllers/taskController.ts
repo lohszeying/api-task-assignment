@@ -1,12 +1,17 @@
 import { Request, Response } from 'express';
 import { prisma } from '../db/client';
 
+interface Developer {
+  name: string;
+  id: string;
+}
+
 interface TaskSummary {
   taskId: string;
   title: string;
   skills: string[];
   status: string;
-  assignee: string | null;
+  developer?: Developer;
   subtasks?: TaskSummary[];
 }
 
@@ -30,7 +35,7 @@ export const getTasks = async (_req: Request, res: Response) => {
         title: task.title,
         skills: task.skills.map(({ skill }) => skill.skillName),
         status: task.status.statusName,
-        assignee: task.developer ? task.developer.developerName : null
+        developer: task.developer ? {name: task.developer.developerName, id: task.developer.developerId} : undefined
       });
     }
 
