@@ -9,7 +9,7 @@ GET {{baseUrl}}/skills
 ###
 // Get developers
 // Optional query parma: skill, eg. ?skill=1 or ?skill=1,2
-GET {{baseUrl}}/developers?skill=1
+GET {{baseUrl}}/developers
 
 ###
 // Get all statuses
@@ -18,6 +18,10 @@ GET {{baseUrl}}/statuses
 ###
 // Get tasks
 GET {{baseUrl}}/tasks
+
+###
+// Get task by task id
+GET {{baseUrl}}/tasks/94d53968-af99-4bc1-9e98-a9d46a40d738
 
 ###
 // Create task. Will assign default statusId 1 (Backlog) for simplicity, since requirement did not state need to assign status during task creation.
@@ -35,7 +39,6 @@ POST {{baseUrl}}/tasks
         {
             "title": "Mock title", // Required
             "skills": [1], // Field optional. If none, use LLM. Means under thsi tasks endpoint, should also call LLM?
-            "assignee": "xxxx-xxxx", // Should put developer id here. Field optional.If none, assignee can be left empty.
         }
     ]
 }
@@ -45,7 +48,22 @@ POST {{baseUrl}}/tasks
 content-type: application/json
 
 {
-    "title": "As a user, I want to see the website and able to login."
+    "title": "As a user, I want to use this website on my mobile and tablet",
+    "skills": [1],
+    "subtasks": [
+        {
+            "title": "As an analyst, I want to analyse user behaviour",
+            "skills": [1,2],
+            "subtasks": [
+                {
+                    "title": "As a user, I want to customise profile"
+                }
+            ]
+        },
+        {
+            "title": "As an analyst, I want to see clickstream data."
+        }
+    ]
 }
 
 
@@ -63,7 +81,7 @@ content-type: application/json
 // Update task's assignee (developer)
 // Have some constraints: Task can only be assigned to assignee with skills(s) required by task.
 // Means, the task should have at least 1 skill assigned to it... Else throw error?
-PATCH {{baseUrl}}/tasks/b24c93ca-338a-41e3-acd2-6920290a570b/developer
+PATCH {{baseUrl}}/tasks/35592a96-1b81-4982-b730-5c4f07306e79/developer
 content-type: application/json
 
 {

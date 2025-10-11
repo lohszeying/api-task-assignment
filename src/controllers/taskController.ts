@@ -3,7 +3,8 @@ import {
   fetchTaskHierarchy,
   createTaskWithSubtasks,
   assignDeveloperToTaskService,
-  updateTaskStatusService
+  updateTaskStatusService,
+  fetchTaskWithNeighbors
 } from '../services/taskService';
 import { HttpError } from '../services/errors';
 
@@ -73,5 +74,16 @@ export const updateTaskStatus = async (req: Request, res: Response) => {
     res.status(204).send();
   } catch (error) {
     handleError(error, res, 'Failed to update task status');
+  }
+};
+
+export const getTaskById = async (req: Request, res: Response) => {
+  const { taskId } = req.params;
+
+  try {
+    const task = await fetchTaskWithNeighbors(taskId);
+    res.json(task);
+  } catch (error) {
+    handleError(error, res, 'Failed to fetch task');
   }
 };

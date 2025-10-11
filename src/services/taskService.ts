@@ -31,6 +31,16 @@ export interface TaskSkillOutput {
   skillName: string;
 }
 
+export interface TaskDetails {
+  taskId: string;
+  title: string;
+  status: string;
+  skills: string[];
+  developer?: { id: string; name: string } | null;
+  parent?: { taskId: string; title: string; status: string };
+  children?: Array<{ taskId: string; title: string; status: string }>;
+}
+
 export interface TaskCreationPayload {
   title?: string;
   skills?: string[];
@@ -404,4 +414,59 @@ export const updateTaskStatusService = async (
     where: { taskId },
     data: { statusId: statusRecord.statusId }
   });
+};
+
+export const fetchTaskWithNeighbors = async (taskId: string): Promise<TaskDetails> => {
+  const task = await prisma.task.findUnique({
+    where: { taskId },
+    include: {
+      status: true,
+      developer: true,
+      skills: { include: { skill: true } },
+      parent: {
+        select: {
+          taskId: true,
+          title: true,
+          status: { select: { statusName: true } }
+        }
+      },
+      children: {
+        select: {
+          taskId: true,
+          title: true,
+          status: { select: { statusName: true } }
+        },
+        orderBy: { createdAt: 'asc' }
+      }
+    }
+  });
+
+  if (!task) {
+    throw new HttpError(404, 'Task not found.');
+  }
+
+  return {
+    taskId: task.taskId,
+    title: task.title,
+    status: task.status.statusName,
+    skills: task.skills.map(({ skill }) => skill.skillName),
+    developer: task.developer
+      ? { id: task.developer.developerId, name: task.developer.developerName }
+      : null,
+    parent: task.parent
+      ? {
+          taskId: task.parent.taskId,
+          title: task.parent.title,
+          status: task.parent.status?.statusName ?? 'Unknown'
+        }
+      : undefined,
+    children:
+      task.children.length > 0
+        ? task.children.map((child) => ({
+            taskId: child.taskId,
+            title: child.title,
+            status: child.status?.statusName ?? 'Unknown'
+          }))
+        : undefined
+  };
 };
