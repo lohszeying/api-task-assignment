@@ -4,7 +4,8 @@ import {
   createTaskWithSubtasks,
   assignDeveloperToTaskService,
   updateTaskStatusService,
-  fetchTaskWithNeighbors
+  fetchTaskWithNeighbors,
+  unassignDeveloperFromTaskService
 } from '../services/taskService';
 import { HttpError } from '../services/errors';
 
@@ -59,6 +60,17 @@ export const assignDeveloperToTask = async (req: Request, res: Response) => {
     res.status(204).send();
   } catch (error) {
     handleError(error, res, 'Failed to assign developer to task');
+  }
+};
+
+export const unassignDeveloperFromTask = async (req: Request, res: Response) => {
+  const { taskId } = req.params;
+
+  try {
+    await unassignDeveloperFromTaskService(taskId);
+    res.status(204).send();
+  } catch (error) {
+    handleError(error, res, 'Failed to unassign developer from task');
   }
 };
 

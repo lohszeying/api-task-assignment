@@ -21,7 +21,7 @@ GET {{baseUrl}}/tasks
 
 ###
 // Get task by task id
-GET {{baseUrl}}/tasks/94d53968-af99-4bc1-9e98-a9d46a40d738
+GET {{baseUrl}}/tasks/60a7aa66-8eed-499b-be7f-78ac158d8094
 
 ###
 // Create task. Will assign default statusId 1 (Backlog) for simplicity, since requirement did not state need to assign status during task creation.
@@ -74,7 +74,7 @@ PATCH {{baseUrl}}/tasks/60a7aa66-8eed-499b-be7f-78ac158d8094/status
 content-type: application/json
 
 {
-    "statusId": "5"
+    "statusId": "2"
 }
 
 ###
@@ -87,6 +87,10 @@ content-type: application/json
 {
     "developerId": "aa9beae9-336d-46ce-aafb-74c88992a568"
 }
+
+###
+// Unassign task's assignee (developer)
+DELETE {{baseUrl}}/tasks/7a5e9113-bbe9-42cc-9ce5-f6035f77461e/developer
 
 ###
 // Gemini

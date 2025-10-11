@@ -317,6 +317,22 @@ export const assignDeveloperToTaskService = async (
   });
 };
 
+export const unassignDeveloperFromTaskService = async (taskId: string): Promise<void> => {
+  const task = await prisma.task.findUnique({
+    where: { taskId },
+    select: { taskId: true }
+  });
+
+  if (!task) {
+    throw new HttpError(404, 'Task not found.');
+  }
+
+  await prisma.task.update({
+    where: { taskId },
+    data: { developerId: null }
+  });
+};
+
 export const updateTaskStatusService = async (
   taskId: string,
   statusId: number | string | undefined
