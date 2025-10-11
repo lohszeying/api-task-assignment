@@ -16,6 +16,29 @@ interface TaskSummary {
   subtasks?: TaskSummary[];
 }
 
+interface TaskCreationPayload {
+  title?: string;
+  skills?: string[];
+  developerId?: string;
+  subtasks?: TaskCreationPayload[];
+}
+
+interface CreatedTaskResult {
+  taskId: string;
+  title: string;
+  statusId: number;
+  developerId: string | null;
+  skills: string[];
+  subtasks?: CreatedTaskResult[];
+}
+
+class HttpError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+    this.name = 'HttpError';
+  }
+}
+
 export const getTasks = async (_req: Request, res: Response) => {
   try {
     const tasks = await prisma.task.findMany({
@@ -133,7 +156,160 @@ export const assignDeveloperToTask = async (req: Request, res: Response) => {
   }
 };
 
+const BACKLOG_STATUS_ID = 1;
 const DONE_STATUS_ID = 5;
+
+const createTaskRecursive = async (
+  payload: TaskCreationPayload,
+  parentTaskId: string | null,
+  tx: Prisma.TransactionClient
+): Promise<CreatedTaskResult> => {
+  if (!payload || typeof payload !== 'object') {
+    throw new HttpError(400, 'Invalid task payload.');
+  }
+
+  const title = typeof payload.title === 'string' ? payload.title.trim() : '';
+
+  if (!title) {
+    throw new HttpError(400, 'Task title is required.');
+  }
+
+  const skillNames = Array.isArray(payload.skills)
+    ? Array.from(
+        new Set(
+          payload.skills
+            .map((skill) => (typeof skill === 'string' ? skill.trim() : ''))
+            .filter((skill) => skill.length > 0)
+        )
+      )
+    : [];
+
+  const skillRecords =
+    skillNames.length > 0
+      ? await tx.skill.findMany({
+          where: { skillName: { in: skillNames } }
+        })
+      : [];
+
+  if (skillNames.length !== skillRecords.length) {
+    const foundNames = new Set(skillRecords.map((record) => record.skillName));
+    const missing = skillNames.filter((skill) => !foundNames.has(skill));
+    throw new HttpError(400, `Unknown skills: ${missing.join(', ')}`);
+  }
+
+  let developerId: string | null =
+    typeof payload.developerId === 'string' && payload.developerId.trim().length > 0
+      ? payload.developerId.trim()
+      : null;
+
+  if (developerId) {
+    const developer = await tx.developer.findUnique({
+      where: { developerId },
+      include: {
+        skills: {
+          select: { skillId: true }
+        }
+      }
+    });
+
+    if (!developer) {
+      throw new HttpError(404, 'Developer not found.');
+    }
+
+    const requiredSkillIds = skillRecords.map((record) => record.skillId);
+    const developerSkillIds = developer.skills.map((skill) => skill.skillId);
+
+    const hasAllSkills = requiredSkillIds.every((skillId) =>
+      developerSkillIds.includes(skillId)
+    );
+
+    if (!hasAllSkills) {
+      throw new HttpError(
+        400,
+        'Developer does not have all skills required for this task.'
+      );
+    }
+  }
+
+  const task = await tx.task.create({
+    data: {
+      title,
+      statusId: BACKLOG_STATUS_ID,
+      developerId,
+      parentTaskId
+    }
+  });
+
+  if (skillRecords.length > 0) {
+    await tx.taskSkill.createMany({
+      data: skillRecords.map((record) => ({
+        taskId: task.taskId,
+        skillId: record.skillId
+      })),
+      skipDuplicates: true
+    });
+  }
+
+  const subtaskPayloads = Array.isArray(payload.subtasks) ? payload.subtasks : [];
+  const subtaskResults: CreatedTaskResult[] = [];
+
+  for (const subtaskPayload of subtaskPayloads) {
+    if (!subtaskPayload || typeof subtaskPayload !== 'object') {
+      throw new HttpError(400, 'Invalid subtask payload.');
+    }
+    const subtaskResult = await createTaskRecursive(subtaskPayload, task.taskId, tx);
+    subtaskResults.push(subtaskResult);
+  }
+
+  return {
+    taskId: task.taskId,
+    title: task.title,
+    statusId: task.statusId,
+    developerId: task.developerId ?? null,
+    skills: skillNames,
+    subtasks: subtaskResults.length > 0 ? subtaskResults : undefined
+  };
+};
+
+export const createTask = async (req: Request, res: Response) => {
+  const parentTaskIdParam = typeof req.params.taskId === 'string' ? req.params.taskId : undefined;
+  const parentTaskIdBody =
+    typeof req.body?.parentTaskId === 'string' ? req.body.parentTaskId : undefined;
+
+  const parentTaskId = parentTaskIdParam || parentTaskIdBody || null;
+
+  const payload = req.body as TaskCreationPayload | undefined;
+
+  if (!payload || typeof payload !== 'object') {
+    return res.status(400).json({ message: 'Request body must be an object.' });
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      if (parentTaskId) {
+        const parent = await tx.task.findUnique({
+          where: { taskId: parentTaskId },
+          select: { taskId: true }
+        });
+
+        if (!parent) {
+          throw new HttpError(404, 'Parent task not found.');
+        }
+      }
+
+      return createTaskRecursive(payload, parentTaskId, tx);
+    });
+
+    return res.status(201).json(result);
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return res.status(error.status).json({ message: error.message });
+    }
+
+    console.error('Failed to create task', error);
+    return res.status(500).json({ message: 'Failed to create task.' });
+  }
+};
 
 export const updateTaskStatus = async (req: Request, res: Response) => {
   const { taskId } = req.params;

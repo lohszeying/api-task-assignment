@@ -20,23 +20,23 @@ GET {{baseUrl}}/statuses
 GET {{baseUrl}}/tasks
 
 ###
-// Create task (parent)
+// Create task. Will assign default statusId 1 (Backlog) for simplicity, since requirement did not state need to assign status during task creation.
+// There are complexities when user first create parent task with status Done, then create a subtask without being status Done.
+// May be a bad user experience because user intended for parent task to be status Done.
 POST {{baseUrl}}/tasks
 {
     "title": "Mock title", // Required
-    "skills": ["Frontend"], // Field optional. If none, use LLM. Means under thsi tasks endpoint, should also call LLM?
-    "status": "Ready for development", // Field optional. If none, assign to "Backlog" (first status)
-    "assignee": "xxxx-xxxx" // Should put developer id here. Field optional.If none, assignee can be left empty.
-}
-
-###
-// Create task (child)
-POST {{baseUrl}}/tasks/{{taskId}}
-{
-    "title": "Mock title", // Required
-    "skills": ["Frontend"], // Field optional. If none, use LLM. Means under thsi tasks endpoint, should also call LLM?
-    "status": "Ready for development", // Field optional. If none, assign to "Backlog" (first status)
-    "assignee": "xxxx-xxxx" // Should put developer id here. Field optional.If none, assignee can be left empty.
+    "skills": [1], // Field optional. If none, use LLM. Means under thsi tasks endpoint, should also call LLM?
+    "assignee": "xxxx-xxxx", // Should put developer id here. Field optional.If none, assignee can be left empty.
+    "parentTaskId": "xxx-xxx", // Optional. If creating a child subtask standalone (we may not need it though?)
+    // subtasks is optional, only when we want to create child task in one shot
+    "subtasks": [
+        {
+            "title": "Mock title", // Required
+            "skills": [1], // Field optional. If none, use LLM. Means under thsi tasks endpoint, should also call LLM?
+            "assignee": "xxxx-xxxx", // Should put developer id here. Field optional.If none, assignee can be left empty.
+        }
+    ]
 }
 
 ###
