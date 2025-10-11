@@ -12,6 +12,10 @@ GET {{baseUrl}}/skills
 GET {{baseUrl}}/developers?skill=1
 
 ###
+// Get all statuses
+GET {{baseUrl}}/statuses
+
+###
 // Get tasks
 GET {{baseUrl}}/tasks
 
@@ -38,9 +42,11 @@ POST {{baseUrl}}/tasks/{{taskId}}
 ###
 // Update task's status
 // Have some constraints: If there is subtask, all the subtask (and nested subtasks) must be "Done" before this task can be Done.
-PATCH {{baseUrl}}/tasks/{{taskId}}/status
+PATCH {{baseUrl}}/tasks/60a7aa66-8eed-499b-be7f-78ac158d8094/status
+content-type: application/json
+
 {
-    "status": "1"
+    "statusId": "5"
 }
 
 ###
