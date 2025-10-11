@@ -5,6 +5,7 @@ import {
   SkillDescriptor,
   TaskDescriptor
 } from '../client/geminiClient';
+import { HttpError } from './errors';
 
 enum TaskStatusIds {
   Backlog = 1,
@@ -43,13 +44,6 @@ export interface CreatedTaskResult {
   skills: TaskSkillOutput[];
   developerId: string | null;
   subtasks?: CreatedTaskResult[];
-}
-
-export class HttpError extends Error {
-  constructor(public status: number, message: string) {
-    super(message);
-    this.name = 'HttpError';
-  }
 }
 
 export const fetchTaskHierarchy = async (): Promise<TaskSummary[]> => {

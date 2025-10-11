@@ -3,9 +3,9 @@ import {
   fetchTaskHierarchy,
   createTaskWithSubtasks,
   assignDeveloperToTaskService,
-  updateTaskStatusService,
-  HttpError
+  updateTaskStatusService
 } from '../services/taskService';
+import { HttpError } from '../services/errors';
 
 const extractParentTaskId = (req: Request): string | null => {
   const paramId = typeof req.params.taskId === 'string' ? req.params.taskId : undefined;
