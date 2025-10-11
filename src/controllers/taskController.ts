@@ -1,6 +1,11 @@
 import { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../db/client';
+import {
+  inferSkillsForTasks,
+  SkillDescriptor,
+  TaskDescriptor
+} from '../client/geminiClient';
 
 interface Developer {
   name: string;
@@ -23,12 +28,17 @@ interface TaskCreationPayload {
   subtasks?: TaskCreationPayload[];
 }
 
+interface TaskSkillOutput {
+  skillId: number;
+  skillName: string;
+}
+
 interface CreatedTaskResult {
   taskId: string;
   title: string;
   statusId: number;
   developerId: string | null;
-  skills: string[];
+  skills: TaskSkillOutput[];
   subtasks?: CreatedTaskResult[];
 }
 
@@ -159,10 +169,22 @@ export const assignDeveloperToTask = async (req: Request, res: Response) => {
 const BACKLOG_STATUS_ID = 1;
 const DONE_STATUS_ID = 5;
 
+interface TaskCreationContext {
+  skillsByName: Map<string, SkillDescriptor>;
+  skillsById: Map<number, SkillDescriptor>;
+  tasksNeedingInference: Array<{
+    taskId: string;
+    title: string;
+    resultRef: CreatedTaskResult;
+  }>;
+  createdTaskIds: string[];
+}
+
 const createTaskRecursive = async (
   payload: TaskCreationPayload,
   parentTaskId: string | null,
-  tx: Prisma.TransactionClient
+  tx: Prisma.TransactionClient,
+  context: TaskCreationContext
 ): Promise<CreatedTaskResult> => {
   if (!payload || typeof payload !== 'object') {
     throw new HttpError(400, 'Invalid task payload.');
@@ -184,23 +206,30 @@ const createTaskRecursive = async (
       )
     : [];
 
-  const skillRecords =
-    skillNames.length > 0
-      ? await tx.skill.findMany({
-          where: { skillName: { in: skillNames } }
-        })
-      : [];
+  const matchedSkills: SkillDescriptor[] = [];
+  const missingSkills: string[] = [];
 
-  if (skillNames.length !== skillRecords.length) {
-    const foundNames = new Set(skillRecords.map((record) => record.skillName));
-    const missing = skillNames.filter((skill) => !foundNames.has(skill));
-    throw new HttpError(400, `Unknown skills: ${missing.join(', ')}`);
+  for (const skillName of skillNames) {
+    const match = context.skillsByName.get(skillName.toLowerCase());
+    if (match) {
+      matchedSkills.push(match);
+    } else {
+      missingSkills.push(skillName);
+    }
+  }
+
+  if (missingSkills.length > 0) {
+    throw new HttpError(400, `Unknown skills: ${missingSkills.join(', ')}`);
   }
 
   let developerId: string | null =
     typeof payload.developerId === 'string' && payload.developerId.trim().length > 0
       ? payload.developerId.trim()
       : null;
+
+  if (developerId && matchedSkills.length === 0) {
+    throw new HttpError(400, 'Cannot assign a developer when skills are not specified.');
+  }
 
   if (developerId) {
     const developer = await tx.developer.findUnique({
@@ -216,7 +245,7 @@ const createTaskRecursive = async (
       throw new HttpError(404, 'Developer not found.');
     }
 
-    const requiredSkillIds = skillRecords.map((record) => record.skillId);
+    const requiredSkillIds = matchedSkills.map((record) => record.skillId);
     const developerSkillIds = developer.skills.map((skill) => skill.skillId);
 
     const hasAllSkills = requiredSkillIds.every((skillId) =>
@@ -240,9 +269,11 @@ const createTaskRecursive = async (
     }
   });
 
-  if (skillRecords.length > 0) {
+  context.createdTaskIds.push(task.taskId);
+
+  if (matchedSkills.length > 0) {
     await tx.taskSkill.createMany({
-      data: skillRecords.map((record) => ({
+      data: matchedSkills.map((record) => ({
         taskId: task.taskId,
         skillId: record.skillId
       })),
@@ -257,18 +288,33 @@ const createTaskRecursive = async (
     if (!subtaskPayload || typeof subtaskPayload !== 'object') {
       throw new HttpError(400, 'Invalid subtask payload.');
     }
-    const subtaskResult = await createTaskRecursive(subtaskPayload, task.taskId, tx);
+    const subtaskResult = await createTaskRecursive(
+      subtaskPayload,
+      task.taskId,
+      tx,
+      context
+    );
     subtaskResults.push(subtaskResult);
   }
 
-  return {
+  const taskResult: CreatedTaskResult = {
     taskId: task.taskId,
     title: task.title,
     statusId: task.statusId,
     developerId: task.developerId ?? null,
-    skills: skillNames,
+    skills: matchedSkills.map(({ skillId, skillName }) => ({ skillId, skillName })),
     subtasks: subtaskResults.length > 0 ? subtaskResults : undefined
   };
+
+  if (matchedSkills.length === 0) {
+    context.tasksNeedingInference.push({
+      taskId: task.taskId,
+      title: task.title,
+      resultRef: taskResult
+    });
+  }
+
+  return taskResult;
 };
 
 export const createTask = async (req: Request, res: Response) => {
@@ -285,6 +331,25 @@ export const createTask = async (req: Request, res: Response) => {
   }
 
   try {
+    const skills = await prisma.skill.findMany({
+      select: { skillId: true, skillName: true }
+    });
+
+    const skillsByName = new Map(
+      skills.map((skill) => [skill.skillName.toLowerCase(), skill as SkillDescriptor])
+    );
+
+    const skillsById = new Map(
+      skills.map((skill) => [skill.skillId, skill as SkillDescriptor])
+    );
+
+    const context: TaskCreationContext = {
+      skillsByName,
+      skillsById,
+      tasksNeedingInference: [],
+      createdTaskIds: []
+    };
+
     const result = await prisma.$transaction(async (tx) => {
       if (parentTaskId) {
         const parent = await tx.task.findUnique({
@@ -297,8 +362,64 @@ export const createTask = async (req: Request, res: Response) => {
         }
       }
 
-      return createTaskRecursive(payload, parentTaskId, tx);
+      return createTaskRecursive(payload, parentTaskId, tx, context);
     });
+
+    if (context.tasksNeedingInference.length > 0) {
+      try {
+        const suggestions = await inferSkillsForTasks(
+          context.tasksNeedingInference.map<TaskDescriptor>(({ taskId, title }) => ({
+            taskId,
+            description: title
+          })),
+          skills
+        );
+
+        const insertData: { taskId: string; skillId: number }[] = [];
+
+        for (const pending of context.tasksNeedingInference) {
+          const suggestedSkillIds = suggestions[pending.taskId];
+
+          if (!Array.isArray(suggestedSkillIds) || suggestedSkillIds.length === 0) {
+            continue;
+          }
+
+          const validSkills = Array.from(
+            new Set(
+              suggestedSkillIds
+                .map((value) => Number(value))
+                .filter((value) => Number.isInteger(value) && context.skillsById.has(value))
+            )
+          );
+
+          if (validSkills.length === 0) {
+            continue;
+          }
+
+          pending.resultRef.skills = validSkills.map((skillId) => {
+            const skill = context.skillsById.get(skillId)!;
+            return { skillId: skill.skillId, skillName: skill.skillName };
+          });
+
+          for (const skillId of validSkills) {
+            insertData.push({ taskId: pending.taskId, skillId });
+          }
+        }
+
+        if (insertData.length > 0) {
+          await prisma.taskSkill.createMany({ data: insertData, skipDuplicates: true });
+        }
+      } catch (error) {
+        await prisma.task.deleteMany({
+          where: { taskId: { in: context.createdTaskIds } }
+        });
+
+        console.error('Failed to infer skills for tasks', error);
+        return res
+          .status(500)
+          .json({ message: 'Failed to automatically assign skills to tasks.' });
+      }
+    }
 
     return res.status(201).json(result);
   } catch (error) {

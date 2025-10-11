@@ -23,11 +23,12 @@ GET {{baseUrl}}/tasks
 // Create task. Will assign default statusId 1 (Backlog) for simplicity, since requirement did not state need to assign status during task creation.
 // There are complexities when user first create parent task with status Done, then create a subtask without being status Done.
 // May be a bad user experience because user intended for parent task to be status Done.
+// Will also remove "assignee" field (developer). If the skills is empty, we may be assigning a task to a developer who does not have a skill.
+// Will just rely on update developer endpoint to update asignee.
 POST {{baseUrl}}/tasks
 {
     "title": "Mock title", // Required
     "skills": [1], // Field optional. If none, use LLM. Means under thsi tasks endpoint, should also call LLM?
-    "assignee": "xxxx-xxxx", // Should put developer id here. Field optional.If none, assignee can be left empty.
     "parentTaskId": "xxx-xxx", // Optional. If creating a child subtask standalone (we may not need it though?)
     // subtasks is optional, only when we want to create child task in one shot
     "subtasks": [
@@ -38,6 +39,15 @@ POST {{baseUrl}}/tasks
         }
     ]
 }
+
+###
+POST {{baseUrl}}/tasks
+content-type: application/json
+
+{
+    "title": "As a user, I want to see the website and able to login."
+}
+
 
 ###
 // Update task's status
