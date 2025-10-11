@@ -59,3 +59,7 @@ content-type: application/json
 {
     "developerId": "aa9beae9-336d-46ce-aafb-74c88992a568"
 }
+
+###
+// Gemini
+GET {{baseUrl}}/gemini

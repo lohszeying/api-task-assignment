@@ -13,6 +13,7 @@ services:
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       DB_NAME: ${DB_NAME:-task_assignment}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
       # Used for Prisma
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@api_task_assignment_db:5432/task_assignment}
     volumes:
