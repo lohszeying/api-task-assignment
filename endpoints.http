@@ -1,6 +1,7 @@
 // Sample endpoints, can use REST Client extension on VS Code to run this, or run via curl / postman / etc.
 
 @baseUrl = http://localhost:3000
+@taskId = 60a7aa66-8eed-499b-be7f-78ac158d8094
 
 // Get skills
 GET {{baseUrl}}/skills
@@ -12,3 +13,34 @@ GET {{baseUrl}}/developers
 ###
 // Get tasks
 GET {{baseUrl}}/tasks
+
+###
+// Create task (parent)
+POST {{baseUrl}}/tasks
+{
+    "title": "Mock title", // Required
+    "skills": ["Frontend"], // Field optional. If none, use LLM. Means under thsi tasks endpoint, should also call LLM?
+    "status": "Ready for development", // Field optional. If none, assign to "Backlog" (first status)
+    "assignee": "xxxx-xxxx" // Should put developer id here. Field optional.If none, assignee can be left empty.
+}
+
+###
+// Create task (child)
+POST {{baseUrl}}/tasks/{{taskId}}
+{
+    "title": "Mock title", // Required
+    "skills": ["Frontend"], // Field optional. If none, use LLM. Means under thsi tasks endpoint, should also call LLM?
+    "status": "Ready for development", // Field optional. If none, assign to "Backlog" (first status)
+    "assignee": "xxxx-xxxx" // Should put developer id here. Field optional.If none, assignee can be left empty.
+}
+
+###
+// Update task's status
+// Have some constraints: If there is subtask, all the subtask (and nested subtasks) must be "Done" before this task can be Done.
+PATCH {{baseUrl}}/tasks/{{taskId}}/status
+
+###
+// Update task's assignee
+// Have some constraints: Task can only be assigned to assignee with skills(s) required by task.
+// Means, the task should have at least 1 skill assigned to it... Else throw error?
+PATCH {{baseUrl}}/tasks/{{taskId}}/assignee
