@@ -15,10 +15,14 @@ type TaskWithSkills = {
   skills: TaskSkill[];
 };
 type DeveloperWithSkills = { developerId: string; skills: TaskSkill[] };
+type TaskUpdateArgs = {
+  where: { taskId: string };
+  data: { developerId: string | null };
+};
 
 type PrismaTaskMock = {
   findUnique?: (...args: unknown[]) => unknown;
-  update?: (...args: unknown[]) => unknown;
+  update?: (args: TaskUpdateArgs) => Promise<unknown>;
 };
 
 type PrismaDeveloperMock = {
@@ -76,7 +80,7 @@ test('assignDeveloperToTaskService assigns when no skills are required', async (
         skills: []
       }) as TaskWithSkills
   );
-  const taskUpdateMock = t.mock.fn(async () => null);
+  const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => null);
   const developerFindUniqueMock = t.mock.fn(async () => {
     throw new Error('Developer lookup should not be triggered when no skills are required.');
   });
@@ -110,7 +114,7 @@ test('assignDeveloperToTaskService throws when the developer does not exist', as
       }) as TaskWithSkills
   );
   const developerFindUniqueMock = t.mock.fn(async () => null);
-  const taskUpdateMock = t.mock.fn(async () => {
+  const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => {
     throw new Error('Update should not occur when the developer is missing.');
   });
 
@@ -153,7 +157,7 @@ test('assignDeveloperToTaskService throws when the developer lacks required skil
         skills: [{ skillId: 'skill-1' }]
       }) as DeveloperWithSkills
   );
-  const taskUpdateMock = t.mock.fn(async () => {
+  const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => {
     throw new Error('Update should not occur when skills do not match.');
   });
 
@@ -196,7 +200,7 @@ test('assignDeveloperToTaskService assigns when the developer satisfies all requ
         skills: [{ skillId: 'skill-2' }, { skillId: 'skill-1' }]
       }) as DeveloperWithSkills
   );
-  const taskUpdateMock = t.mock.fn(async () => null);
+  const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => null);
 
   prismaMock.task = {
     findUnique: taskFindUniqueMock,
@@ -242,7 +246,7 @@ test('unassignDeveloperFromTaskService clears the developer assignment', async (
         taskId: 'task-123'
       }) as { taskId: string }
   );
-  const taskUpdateMock = t.mock.fn(async () => null);
+  const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => null);
 
   prismaMock.task = {
     findUnique: taskFindUniqueMock,
