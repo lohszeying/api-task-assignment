@@ -1,26 +1,34 @@
+x-api-task-base: &api-task-base
+  build:
+    context: .
+    target: development
+  ports:
+    - "${PORT}:${PORT}"
+  environment:
+    PORT: ${PORT:-3000}
+    DB_HOST: ${DB_HOST:-api_task_assignment_db}
+    DB_PORT: ${DB_PORT:-5432}
+    DB_USER: ${DB_USER:-postgres}
+    DB_PASSWORD: ${DB_PASSWORD:-postgres}
+    DB_NAME: ${DB_NAME:-task_assignment}
+    GEMINI_API_KEY: ${GEMINI_API_KEY}
+    DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@api_task_assignment_db:5432/task_assignment}
+  depends_on:
+    - api_task_assignment_db
+
 services:
   api_task_assignment:
-    build:
-      context: .
-      target: development
+    <<: *api-task-base
+    command: npm run start
+    volumes:
+      - /app/node_modules
+
+  api_task_assignment_dev:
+    <<: *api-task-base
     command: npm run dev
-    ports:
-      - "${PORT}:${PORT}"
-    environment:
-      PORT: ${PORT:-3000}
-      DB_HOST: ${DB_HOST:-api_task_assignment_db}
-      DB_PORT: ${DB_PORT:-5432}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_NAME: ${DB_NAME:-task_assignment}
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
-      # Used for Prisma
-      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@api_task_assignment_db:5432/task_assignment}
     volumes:
       - .:/app
       - /app/node_modules
-    depends_on:
-      - api_task_assignment_db
 
   api_task_assignment_db:
     image: postgres:16-alpine
