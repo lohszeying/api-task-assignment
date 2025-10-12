@@ -6,7 +6,7 @@ import {
   updateTaskStatusService,
   fetchTaskWithNeighbors,
   unassignDeveloperFromTaskService
-} from '../services/taskService';
+} from '../services/task';
 import { HttpError } from '../services/errors';
 
 const extractParentTaskId = (req: Request): string | null => {
