@@ -6,6 +6,7 @@
     "build": "tsc",
     "dev": "tsx watch src/server.ts",
     "start": "npm run build && node dist/server.js",
+    "test": "node --import tsx --test \"{src,tests}/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "migrate:up": "tsx scripts/runMigrationsUp.ts",
     "migrate:down": "tsx scripts/runMigrationsDown.ts",
