@@ -203,3 +203,21 @@ I've added React Toastify to display error growl message, which will be helpful 
 I've choosen to use exact version of the libraries, to ensure the precise same version of dependency and reliable build.
 
 With the recent npm supply chain attack, it is good to pin the versions as well.
+
+### UI
+
+Currently the UI is split into 2 pages: Homepage (task list) and create task page.
+
+#### Homepage (Task list)
+
+Under task list, I've chosen to only render the parent tasks to reduce complexity, even though the `/tasks` [GET] endpoint still returns subtasks and nested subtasks.
+
+In the future, or if I have time, I am thinking to create another page for Task details instead. In that page, we will render Task title, skills, status and assignee, and user can still edit status or assignee from that page. Then, since that page will call `/tasks/:taskId` [GET] endpoint, that endpoint will return optional `parent` object field and direct `children` array of object field. In that page, I am planning to put a link to parent and children if available, similar to how JIRA display weblinks of parent and children card.
+
+#### Create task
+
+Currently, I've imposed a limit of max depth of up to 3 subtasks. This is because if we allow infinite subtasks, the UI will not be able to accomodate. In the future, I plan to enable linkage of new task with `parentTaskId` field (which is already available in the API but not on frontend) to link a newly created task to a parent task.
+
+I've also added a cross button to allow user to be able to delete accidental added subtask, else it may be more complex to allow user to submit the form with empty task title.
+
+When "Create task" button is clicked, I've also disabled the form while the API is still firing. This is to avoid cases where user click on "Create task", and while API is still pending, user tries to edit the form which may lead to unintended behaviour.
