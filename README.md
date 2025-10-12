@@ -1,6 +1,17 @@
-# api-task-assignment README
+# api-task-assignment Setup
 
-With the task being needing full stack application, I've decided to create 2 repositories: api-task-assignment for backend related tasks, and ui-task-assignment for frontend related tasks.
+You will need Docker. You may use Docker Desktop, or Colima.
+
+1. Run `make start_db` to create initial database
+2. Run `make run_migration_up` to run migration files
+3. Run `make run_seed` to seed the data into database
+4. Once the above steps has been ran, subsequently, just run `make start_dev`
+
+# Documentation on design, API and justification
+
+With the task being needing full stack application, I've decided to create 2 repositories: [api-task-assignment](https://github.com/lohszeying/api-task-assignment) for backend related tasks, and [ui-task-assignment](https://github.com/lohszeying/ui-task-assignment) for frontend related tasks.
+
+There is a reason why I've decided to split into 2 separate repositories, 1 is for separation of concern. This is to allow ui related context to be stored separately from api. If we combine both api and ui repository into 1 repository, especially in a large project with many developers, there may be "pipeline war" as well, where developers keep having to rebase and wait for pipeline to pass before being able to merge. It's also good to split backend and frontend so that pipeline can be made simpler, by focusing on just 1 part required.
 
 After setting up the initial stages, for example, with vite create react app and creating express application, I started with backend first.
 
