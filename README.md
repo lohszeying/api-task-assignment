@@ -30,7 +30,7 @@ Afterwards, I put my focus into database.
 
 For the database schema design, I have also planned it with the help of Gemini Flash, to use it as a brainstorming session. It is good and useful as a sort of another pair to communicate with.
 
-In a real world environment, developing features or even chores is always happening, so we would need migration script to create, delete or alter tables, rows, etc. I started with migration script with version control, similar to how it is done in real world.
+In a real world environment, developing features or even chores is always happening, so we would need migration script to create, delete or alter tables, rows, etc. I started with migration script with version control, similar to how it is done in real world. I have also added indexing, since it's the easiest way to optimize a database, although we should use it only when we need to, because mindlessly creating index also comes with drawback to writing data.
 
 Then, since there is a need to seed the data, I have also created a seed script. In addition to the seed data required from the assignment, I have also added more data to help with development of this application.
 
@@ -136,9 +136,25 @@ According to requirements, in order to set status to "Done", all its subtasks an
 
 Also similar to assigning task to a developer, for a better user experience, I have also used optimistic approach.
 
+### Libraries
+
+The libraries I'm using are `cors`, `@google/genai`, `@prisma/client`, `dotenv`, `express`, `pg` and `prisma`. I believe these are the minimum libraries required.
+
+- `cors` - To allow frontend to be able to connect to my backend
+    - Initially after I npm install cors manually, I asked Codex to add my frontend URL. However, it tried to allow origin from all sites `*`, which could be dangerous. I've set it to only allow my frontend localhost URL for now, since I do not have any other non-production or production environment.
+- `@google/genai` - Call LLM to generate skills
+- `@prisma/client` and `prisma` - ORM for database
+- `dotenv` - For environment variables
+- `express` - Web application framework
+- `pg` - For postgres database
+
 ## Frontend
 
 I've used Vite to start a react project, and have chosen React version 19 for React compiler features. While using Codex, I've noticed LLM trying to add `useMemo`, which is not needed anymore in React 19 as React compiler automatically optimizes. This is another thing to note regarding using LLM, where it may use code that are out of date.
+
+I've tried to split the structure of the folder into `components`, `config` to store URL information if there are more backend URLs in the future (eg. microservice or third party), `lib` for reusable http client code, `features` for utilities broken down by features, `pages` for the different pages, and `services` for calling endpoints.
+
+For `services`, we put in the base URL. For now, we are still using the same URL constant defined in `config`, but this can scale well into the future if we have more backend URLs.
 
 ### Libraries
 
