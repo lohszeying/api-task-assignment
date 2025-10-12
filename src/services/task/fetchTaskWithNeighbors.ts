@@ -2,7 +2,7 @@ import { prisma } from '../../db/client';
 import type { TaskDetails } from '../../responseParam/task';
 import { HttpError } from '../errors';
 
-// Get task by id
+// Note: Get task by id. Currently unused by frontend.
 export const fetchTaskWithNeighbors = async (taskId: string): Promise<TaskDetails> => {
   const task = await prisma.task.findUnique({
     where: { taskId },

@@ -7,7 +7,7 @@ import {
   fetchTaskWithNeighbors,
   unassignDeveloperFromTaskService
 } from '../services/task';
-import { HttpError } from '../services/errors';
+import { handleError } from '../utils/error';
 
 const extractParentTaskId = (req: Request): string | null => {
   const paramId = typeof req.params.taskId === 'string' ? req.params.taskId : undefined;
@@ -17,15 +17,6 @@ const extractParentTaskId = (req: Request): string | null => {
       : undefined;
 
   return paramId || bodyId || null;
-};
-
-const handleError = (error: unknown, res: Response, fallbackMessage: string) => {
-  if (error instanceof HttpError) {
-    return res.status(error.status).json({ message: error.message });
-  }
-
-  console.error(fallbackMessage, error);
-  return res.status(500).json({ message: fallbackMessage });
 };
 
 export const getTasks = async (_req: Request, res: Response) => {
@@ -89,6 +80,7 @@ export const updateTaskStatus = async (req: Request, res: Response) => {
   }
 };
 
+// Note: Currently unused by frontend.
 export const getTaskById = async (req: Request, res: Response) => {
   const { taskId } = req.params;
 
