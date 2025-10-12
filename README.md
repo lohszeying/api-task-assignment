@@ -180,7 +180,7 @@ For `services`, we put in the base URL. For now, we are still using the same URL
 
 #### Tanstack
 
-Regarding usage of library, I started off with using Tanstack query. I have heard great things from colleagues about tanstack query, and have added tanstack query during work for one of my project, and have found it very useful. It comes with caching with `useQuery`, and we do not need to manually set loading and error state.
+Regarding usage of library, I started off with using Tanstack query. I have heard great things from colleagues about tanstack query, and have added tanstack query during work for one of my project, and have found it very useful. It comes with caching and auto retry with `useQuery`, and we do not need to manually set loading and error state.
 
 Hence, I've also decided to add it to this assignment. I have also known about Tanstack router (in fact it's one of the option available when I start a React project with Vite), so I have also added it. This will be my first time using Tanstack router.
 
