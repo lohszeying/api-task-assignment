@@ -1,11 +1,20 @@
 # api-task-assignment Setup
 
-You will need Docker. You may use Docker Desktop, or Colima.
+You will need Docker. You may use Docker Desktop, or Colima or other container solutions.
 
-1. Run `make start_db` to create initial database
-2. Run `make run_migration_up` to run migration files
-3. Run `make run_seed` to seed the data into database
-4. Once the above steps has been ran, subsequently, just run `make start_dev`
+1. Copy `.env.example` into `.env`. Replace value for `GEMINI_API_KEY`.
+2. Run `make start_db` to create initial database
+3. Run `make run_migration_up` to run migration files
+4. Run `make run_seed` to seed the data into database
+5. Once the above steps has been ran, subsequently, just run `make start_dev` (for hot reload) or `make start`
+
+Note: Alternatively, you may also run `make init_and_start` for a first time set-up. Subsequently, just run `make start_dev` (for hot reload) or `make start`.
+
+To remove database data, run `make remove_db_data`.
+
+**Note for development usage only**
+
+Requires you to have `npm` to get type definitions. Run `npm i` to install libraries. Note that Prisma also requires `npm i` or `npm run postinstall` to generate type definition.
 
 # Documentation on design, API and justification
 

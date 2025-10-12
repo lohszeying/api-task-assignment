@@ -25,6 +25,9 @@ run_migration_down: start_db
 run_seed: run_migration_up
 	npm run seed
 
+init_and_start: run_seed
+	$(COMPOSE_PROJECT) up api_task_assignment
+
 stop:
 	$(COMPOSE_PROJECT) down
 
