@@ -3,7 +3,7 @@ import type { TaskDetails } from '../../responseParam/task';
 import { HttpError } from '../errors';
 
 // Note: Get task by id. Currently unused by frontend.
-export const fetchTaskWithNeighbors = async (taskId: string): Promise<TaskDetails> => {
+export const fetchTaskWithTaskId = async (taskId: string): Promise<TaskDetails> => {
   const task = await prisma.task.findUnique({
     where: { taskId },
     include: {

@@ -2,7 +2,7 @@ import { prisma } from '../../db/client';
 import type { TaskSummary } from '../../responseParam/task';
 
 // Get all tasks
-export const fetchTaskHierarchy = async (): Promise<TaskSummary[]> => {
+export const fetchAllTasks = async (): Promise<TaskSummary[]> => {
   const tasks = await prisma.task.findMany({
     include: {
       skills: { include: { skill: true } },

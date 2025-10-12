@@ -1,4 +1,4 @@
-export { fetchTaskHierarchy } from './fetchTaskHierarchy';
+export { fetchAllTasks } from './fetchAllTasks';
 export {
   createTaskWithSubtasks,
   type TaskCreationPayload
@@ -8,6 +8,6 @@ export {
   unassignDeveloperFromTaskService
 } from './taskAssignment';
 export { updateTaskStatusService } from './updateTaskStatus';
-export { fetchTaskWithNeighbors } from './fetchTaskWithNeighbors';
+export { fetchTaskWithTaskId } from './fetchTaskWithTaskId';
 export { TaskStatusIds } from './constants';
 

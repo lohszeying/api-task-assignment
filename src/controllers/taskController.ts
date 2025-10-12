@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import {
-  fetchTaskHierarchy,
+  fetchAllTasks,
   createTaskWithSubtasks,
   assignDeveloperToTaskService,
   updateTaskStatusService,
-  fetchTaskWithNeighbors,
+  fetchTaskWithTaskId,
   unassignDeveloperFromTaskService
 } from '../services/task';
 import { handleError } from '../utils/error';
@@ -21,7 +21,7 @@ const extractParentTaskId = (req: Request): string | null => {
 
 export const getTasks = async (_req: Request, res: Response) => {
   try {
-    const tasks = await fetchTaskHierarchy();
+    const tasks = await fetchAllTasks();
     res.json(tasks);
   } catch (error) {
     handleError(error, res, 'Failed to fetch tasks');
@@ -85,7 +85,7 @@ export const getTaskById = async (req: Request, res: Response) => {
   const { taskId } = req.params;
 
   try {
-    const task = await fetchTaskWithNeighbors(taskId);
+    const task = await fetchTaskWithTaskId(taskId);
     res.json(task);
   } catch (error) {
     handleError(error, res, 'Failed to fetch task');
