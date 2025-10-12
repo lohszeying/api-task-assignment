@@ -44,6 +44,8 @@ Containerization is also important, because everyone's computer is different, an
 
 I used Codex to containerize, and giving instructions to create Makefile as well. One thing I realized is it tried to use Node 20 image, which does not have active support anymore, and security support ends in 6 months. I've changed it to node 24 as it's the latest version with more years of security support. This is one aspect where LLM may be trained from the internet to use node 20 (older) version, but it does not know there is a more updated version available for use.
 
+Currently, there is no swagger. If given more time, I would love to add swagger for documentation purposes.
+
 ### Database
 
 Afterwards, I put my focus into database.
