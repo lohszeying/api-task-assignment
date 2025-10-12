@@ -2,16 +2,9 @@ import { prisma } from '../db/client';
 import { HttpError } from './errors';
 import type { DeveloperListItem } from '../responseParam/developer';
 
-const parseSkillParam = (skillParam: unknown): number[] => {
+const parseSkillParam = (skillParam: string): number[] => {
   if (skillParam === undefined || skillParam === null) {
     return [];
-  }
-
-  if (Array.isArray(skillParam)) {
-    if (skillParam.some((value) => typeof value !== 'string')) {
-      throw new HttpError(400, 'Invalid skill query parameter');
-    }
-    return parseSkillList(skillParam.join(','));
   }
 
   if (typeof skillParam === 'string') {
@@ -40,7 +33,7 @@ const parseSkillList = (value: string): number[] => {
 };
 
 export const fetchDevelopers = async (
-  skillParam: unknown
+  skillParam: string
 ): Promise<DeveloperListItem[]> => {
   const skillIds = parseSkillParam(skillParam);
 
