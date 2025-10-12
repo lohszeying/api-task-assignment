@@ -15,7 +15,7 @@ enum TaskStatusIds {
 
 export interface TaskCreationPayload {
   title?: string;
-  skills?: string[];
+  skills?: number[];
   subtasks?: TaskCreationPayload[];
 }
 
@@ -76,30 +76,32 @@ interface TaskCreationContext {
 }
 
 const normaliseSkills = (
-  skills: string[] | undefined,
+  skills: number[] | undefined,
   context: TaskCreationContext
 ): SkillDescriptor[] => {
   if (!Array.isArray(skills)) return [];
 
-  const unique = Array.from(
-    new Set(
-      skills
-        .map((skill) => (typeof skill === 'string' ? skill.trim() : ''))
-        .filter((skill) => skill.length > 0)
-    )
-  );
-
+  const uniqueIds = Array.from(new Set(skills));
   const matched: SkillDescriptor[] = [];
-  const missing: string[] = [];
+  const invalidValues: Array<string | number> = [];
 
-  for (const name of unique) {
-    const descriptor = context.skillsByName.get(name.toLowerCase());
-    if (descriptor) matched.push(descriptor);
-    else missing.push(name);
+  for (const raw of uniqueIds) {
+    if (typeof raw !== 'number' || !Number.isInteger(raw)) {
+      invalidValues.push(raw);
+      continue;
+    }
+
+    const descriptor = context.skillsById.get(raw);
+    if (!descriptor) {
+      invalidValues.push(raw);
+      continue;
+    }
+
+    matched.push(descriptor);
   }
 
-  if (missing.length > 0) {
-    throw new HttpError(400, `Unknown skills: ${missing.join(', ')}`);
+  if (invalidValues.length > 0) {
+    throw new HttpError(400, `Unknown skills: ${invalidValues.join(', ')}`);
   }
 
   return matched;
