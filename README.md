@@ -24,7 +24,7 @@ There is a reason why I've decided to split into 2 separate repositories, 1 is f
 
 After setting up the initial stages, for example, with vite create react app and creating express application, I started with backend first.
 
-When doing this assignment, I have used the help of tools such as Codex and Gemini with some planning, since this is due in 3 days which is quite tight. I planned to use around 1.5 days for Backend and 1.5 days for Frontend to hopefully complete the base requirement. I looked at the document, and it did not indicate testing is required.
+When doing this assignment, I have used the help of tools such as Codex and Gemini with some planning, since this is due in 3 days which is quite tight. I planned to use around 1.5 days for Backend and 1.5 days for Frontend to hopefully complete the base requirement. I looked at the document, and it did not indicate testing is required. Also, since I am using Codex, I am frequently using git as a version control.
 
 So for this assignment, I planned to complete the base features required first, then add README file detailing my thought process, and then add test, and even extra features if I have time after writing this document.
 
