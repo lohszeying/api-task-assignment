@@ -74,6 +74,8 @@ I've also listed out the endpoints that I would need for this assignment in endp
 
 It is quite useful at a glance to see what endpoints I would need, and it helps a lot in planning what endpoints to create. When listing out the endpoints, I would also think about the request body structure for create task.
 
+Regarding endpoint response structure, ideally I would want to go with a standardised approach such as following JSON API convention. However, due to time constraint, I've decided to forgo this for now and get the prototype working first with Codex. In an actual project, ideally there should be guidelines on what convention to follow since there are many developers, each with different styles within a team, so it is good if there is consistency.
+
 #### Create task endpoint
 
 One of the more interesting endpoints would definitely be get all tasks, and create task.
