@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Pool } from 'pg';
+import { waitForDatabase } from './utils/waitForDatabase';
 
 const MIGRATIONS_TABLE = 'schema_migrations';
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'migrations');
@@ -50,6 +51,7 @@ const runMigration = async (filename: string) => {
 
 const run = async () => {
   try {
+    await waitForDatabase(pool);
     await ensureMigrationsTable();
 
     const files = await fs.readdir(MIGRATIONS_DIR);

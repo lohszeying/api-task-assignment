@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Pool } from 'pg';
+import { waitForDatabase } from './utils/waitForDatabase';
 
 const SEEDS_TABLE = 'data_seeds';
 const SEEDS_DIR = path.resolve(process.cwd(), 'seeds');
@@ -50,6 +51,7 @@ const applySeed = async (filename: string) => {
 
 const run = async () => {
   try {
+    await waitForDatabase(pool);
     await ensureSeedsTable();
 
     let files: string[];
