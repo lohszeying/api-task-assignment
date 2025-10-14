@@ -1,4 +1,4 @@
-import test from 'node:test';
+import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
@@ -42,224 +42,228 @@ test.afterEach(() => {
   prismaMock.developer = originalDeveloperDelegate;
 });
 
-test('assignDeveloperToTaskService requires a developerId', async () => {
-  await assert.rejects(
-    assignDeveloperToTaskService('task-123', '   '),
-    (error: unknown) => {
-      assert.ok(error instanceof HttpError);
-      assert.equal(error.status, 400);
-      assert.equal(error.message, 'developerId is required.');
-      return true;
-    }
-  );
-});
-
-test('assignDeveloperToTaskService throws when the task does not exist', async (t) => {
-  const findUniqueMock = t.mock.fn(async () => null);
-  prismaMock.task = { findUnique: findUniqueMock };
-
-  await assert.rejects(
-    assignDeveloperToTaskService('task-missing', 'dev-1'),
-    (error: unknown) => {
-      assert.ok(error instanceof HttpError);
-      assert.equal(error.status, 404);
-      assert.equal(error.message, 'Task not found.');
-      return true;
-    }
-  );
-
-  assert.equal(findUniqueMock.mock.callCount(), 1);
-});
-
-test('assignDeveloperToTaskService assigns when no skills are required', async (t) => {
-  const taskFindUniqueMock = t.mock.fn(
-    async () =>
-      ({
-        taskId: 'task-123',
-        developerId: null,
-        skills: []
-      }) as TaskWithSkills
-  );
-  const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => null);
-  const developerFindUniqueMock = t.mock.fn(async () => {
-    throw new Error('Developer lookup should not be triggered when no skills are required.');
+describe('assignDeveloperToTaskService', () => {
+  test('requires a developerId', async () => {
+    await assert.rejects(
+      assignDeveloperToTaskService('task-123', '   '),
+      (error: unknown) => {
+        assert.ok(error instanceof HttpError);
+        assert.equal(error.status, 400);
+        assert.equal(error.message, 'developerId is required.');
+        return true;
+      }
+    );
   });
 
-  prismaMock.task = {
-    findUnique: taskFindUniqueMock,
-    update: taskUpdateMock
-  };
-  prismaMock.developer = {
-    findUnique: developerFindUniqueMock
-  };
+  test('throws when the task does not exist', async (t) => {
+    const findUniqueMock = t.mock.fn(async () => null);
+    prismaMock.task = { findUnique: findUniqueMock };
 
-  await assignDeveloperToTaskService('task-123', 'dev-456');
+    await assert.rejects(
+      assignDeveloperToTaskService('task-missing', 'dev-1'),
+      (error: unknown) => {
+        assert.ok(error instanceof HttpError);
+        assert.equal(error.status, 404);
+        assert.equal(error.message, 'Task not found.');
+        return true;
+      }
+    );
 
-  assert.equal(taskUpdateMock.mock.callCount(), 1);
-  const updateArgs = taskUpdateMock.mock.calls[0].arguments[0];
-  assert.deepEqual(updateArgs, {
-    where: { taskId: 'task-123' },
-    data: { developerId: 'dev-456' }
-  });
-  assert.equal(developerFindUniqueMock.mock.callCount(), 0);
-});
-
-test('assignDeveloperToTaskService throws when the developer does not exist', async (t) => {
-  const taskFindUniqueMock = t.mock.fn(
-    async () =>
-      ({
-        taskId: 'task-123',
-        developerId: null,
-        skills: [{ skillId: 'skill-1' }]
-      }) as TaskWithSkills
-  );
-  const developerFindUniqueMock = t.mock.fn(async () => null);
-  const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => {
-    throw new Error('Update should not occur when the developer is missing.');
+    assert.equal(findUniqueMock.mock.callCount(), 1);
   });
 
-  prismaMock.task = {
-    findUnique: taskFindUniqueMock,
-    update: taskUpdateMock
-  };
-  prismaMock.developer = {
-    findUnique: developerFindUniqueMock
-  };
+  test('assigns when no skills are required', async (t) => {
+    const taskFindUniqueMock = t.mock.fn(
+      async () =>
+        ({
+          taskId: 'task-123',
+          developerId: null,
+          skills: []
+        }) as TaskWithSkills
+    );
+    const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => null);
+    const developerFindUniqueMock = t.mock.fn(async () => {
+      throw new Error('Developer lookup should not be triggered when no skills are required.');
+    });
 
-  await assert.rejects(
-    assignDeveloperToTaskService('task-123', 'dev-missing'),
-    (error: unknown) => {
-      assert.ok(error instanceof HttpError);
-      assert.equal(error.status, 404);
-      assert.equal(error.message, 'Developer not found.');
-      return true;
-    }
-  );
+    prismaMock.task = {
+      findUnique: taskFindUniqueMock,
+      update: taskUpdateMock
+    };
+    prismaMock.developer = {
+      findUnique: developerFindUniqueMock
+    };
 
-  assert.equal(taskFindUniqueMock.mock.callCount(), 1);
-  assert.equal(developerFindUniqueMock.mock.callCount(), 1);
-  assert.equal(taskUpdateMock.mock.callCount(), 0);
-});
+    await assignDeveloperToTaskService('task-123', 'dev-456');
 
-test('assignDeveloperToTaskService throws when the developer lacks required skills', async (t) => {
-  const taskFindUniqueMock = t.mock.fn(
-    async () =>
-      ({
-        taskId: 'task-123',
-        developerId: null,
-        skills: [{ skillId: 'skill-1' }, { skillId: 'skill-2' }]
-      }) as TaskWithSkills
-  );
-  const developerFindUniqueMock = t.mock.fn(
-    async () =>
-      ({
-        developerId: 'dev-1',
-        skills: [{ skillId: 'skill-1' }]
-      }) as DeveloperWithSkills
-  );
-  const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => {
-    throw new Error('Update should not occur when skills do not match.');
+    assert.equal(taskUpdateMock.mock.callCount(), 1);
+    const updateArgs = taskUpdateMock.mock.calls[0].arguments[0];
+    assert.deepEqual(updateArgs, {
+      where: { taskId: 'task-123' },
+      data: { developerId: 'dev-456' }
+    });
+    assert.equal(developerFindUniqueMock.mock.callCount(), 0);
   });
 
-  prismaMock.task = {
-    findUnique: taskFindUniqueMock,
-    update: taskUpdateMock
-  };
-  prismaMock.developer = {
-    findUnique: developerFindUniqueMock
-  };
+  test('throws when the developer does not exist', async (t) => {
+    const taskFindUniqueMock = t.mock.fn(
+      async () =>
+        ({
+          taskId: 'task-123',
+          developerId: null,
+          skills: [{ skillId: 'skill-1' }]
+        }) as TaskWithSkills
+    );
+    const developerFindUniqueMock = t.mock.fn(async () => null);
+    const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => {
+      throw new Error('Update should not occur when the developer is missing.');
+    });
 
-  await assert.rejects(
-    assignDeveloperToTaskService('task-123', 'dev-1'),
-    (error: unknown) => {
-      assert.ok(error instanceof HttpError);
-      assert.equal(error.status, 400);
-      assert.equal(error.message, 'Developer does not have all skills required for this task.');
-      return true;
-    }
-  );
+    prismaMock.task = {
+      findUnique: taskFindUniqueMock,
+      update: taskUpdateMock
+    };
+    prismaMock.developer = {
+      findUnique: developerFindUniqueMock
+    };
 
-  assert.equal(taskFindUniqueMock.mock.callCount(), 1);
-  assert.equal(developerFindUniqueMock.mock.callCount(), 1);
-  assert.equal(taskUpdateMock.mock.callCount(), 0);
-});
+    await assert.rejects(
+      assignDeveloperToTaskService('task-123', 'dev-missing'),
+      (error: unknown) => {
+        assert.ok(error instanceof HttpError);
+        assert.equal(error.status, 404);
+        assert.equal(error.message, 'Developer not found.');
+        return true;
+      }
+    );
 
-test('assignDeveloperToTaskService assigns when the developer satisfies all requirements', async (t) => {
-  const taskFindUniqueMock = t.mock.fn(
-    async () =>
-      ({
-        taskId: 'task-123',
-        developerId: null,
-        skills: [{ skillId: 'skill-1' }, { skillId: 'skill-2' }]
-      }) as TaskWithSkills
-  );
-  const developerFindUniqueMock = t.mock.fn(
-    async () =>
-      ({
-        developerId: 'dev-1',
-        skills: [{ skillId: 'skill-2' }, { skillId: 'skill-1' }]
-      }) as DeveloperWithSkills
-  );
-  const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => null);
-
-  prismaMock.task = {
-    findUnique: taskFindUniqueMock,
-    update: taskUpdateMock
-  };
-  prismaMock.developer = {
-    findUnique: developerFindUniqueMock
-  };
-
-  await assignDeveloperToTaskService('task-123', '  dev-1  ');
-
-  assert.equal(taskUpdateMock.mock.callCount(), 1);
-  const updateArgs = taskUpdateMock.mock.calls[0].arguments[0];
-  assert.deepEqual(updateArgs, {
-    where: { taskId: 'task-123' },
-    data: { developerId: 'dev-1' }
+    assert.equal(taskFindUniqueMock.mock.callCount(), 1);
+    assert.equal(developerFindUniqueMock.mock.callCount(), 1);
+    assert.equal(taskUpdateMock.mock.callCount(), 0);
   });
-  assert.equal(taskFindUniqueMock.mock.callCount(), 1);
-  assert.equal(developerFindUniqueMock.mock.callCount(), 1);
-});
 
-test('unassignDeveloperFromTaskService throws when the task does not exist', async (t) => {
-  const taskFindUniqueMock = t.mock.fn(async () => null);
-  prismaMock.task = { findUnique: taskFindUniqueMock };
+  test('throws when the developer lacks required skills', async (t) => {
+    const taskFindUniqueMock = t.mock.fn(
+      async () =>
+        ({
+          taskId: 'task-123',
+          developerId: null,
+          skills: [{ skillId: 'skill-1' }, { skillId: 'skill-2' }]
+        }) as TaskWithSkills
+    );
+    const developerFindUniqueMock = t.mock.fn(
+      async () =>
+        ({
+          developerId: 'dev-1',
+          skills: [{ skillId: 'skill-1' }]
+        }) as DeveloperWithSkills
+    );
+    const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => {
+      throw new Error('Update should not occur when skills do not match.');
+    });
 
-  await assert.rejects(
-    unassignDeveloperFromTaskService('task-missing'),
-    (error: unknown) => {
-      assert.ok(error instanceof HttpError);
-      assert.equal(error.status, 404);
-      assert.equal(error.message, 'Task not found.');
-      return true;
-    }
-  );
+    prismaMock.task = {
+      findUnique: taskFindUniqueMock,
+      update: taskUpdateMock
+    };
+    prismaMock.developer = {
+      findUnique: developerFindUniqueMock
+    };
 
-  assert.equal(taskFindUniqueMock.mock.callCount(), 1);
-});
+    await assert.rejects(
+      assignDeveloperToTaskService('task-123', 'dev-1'),
+      (error: unknown) => {
+        assert.ok(error instanceof HttpError);
+        assert.equal(error.status, 400);
+        assert.equal(error.message, 'Developer does not have all skills required for this task.');
+        return true;
+      }
+    );
 
-test('unassignDeveloperFromTaskService clears the developer assignment', async (t) => {
-  const taskFindUniqueMock = t.mock.fn(
-    async () =>
-      ({
-        taskId: 'task-123'
-      }) as { taskId: string }
-  );
-  const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => null);
-
-  prismaMock.task = {
-    findUnique: taskFindUniqueMock,
-    update: taskUpdateMock
-  };
-
-  await unassignDeveloperFromTaskService('task-123');
-
-  assert.equal(taskUpdateMock.mock.callCount(), 1);
-  const updateArgs = taskUpdateMock.mock.calls[0].arguments[0];
-  assert.deepEqual(updateArgs, {
-    where: { taskId: 'task-123' },
-    data: { developerId: null }
+    assert.equal(taskFindUniqueMock.mock.callCount(), 1);
+    assert.equal(developerFindUniqueMock.mock.callCount(), 1);
+    assert.equal(taskUpdateMock.mock.callCount(), 0);
   });
-  assert.equal(taskFindUniqueMock.mock.callCount(), 1);
+
+  test('assigns when the developer satisfies all requirements', async (t) => {
+    const taskFindUniqueMock = t.mock.fn(
+      async () =>
+        ({
+          taskId: 'task-123',
+          developerId: null,
+          skills: [{ skillId: 'skill-1' }, { skillId: 'skill-2' }]
+        }) as TaskWithSkills
+    );
+    const developerFindUniqueMock = t.mock.fn(
+      async () =>
+        ({
+          developerId: 'dev-1',
+          skills: [{ skillId: 'skill-2' }, { skillId: 'skill-1' }]
+        }) as DeveloperWithSkills
+    );
+    const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => null);
+
+    prismaMock.task = {
+      findUnique: taskFindUniqueMock,
+      update: taskUpdateMock
+    };
+    prismaMock.developer = {
+      findUnique: developerFindUniqueMock
+    };
+
+    await assignDeveloperToTaskService('task-123', '  dev-1  ');
+
+    assert.equal(taskUpdateMock.mock.callCount(), 1);
+    const updateArgs = taskUpdateMock.mock.calls[0].arguments[0];
+    assert.deepEqual(updateArgs, {
+      where: { taskId: 'task-123' },
+      data: { developerId: 'dev-1' }
+    });
+    assert.equal(taskFindUniqueMock.mock.callCount(), 1);
+    assert.equal(developerFindUniqueMock.mock.callCount(), 1);
+  });
+});
+
+describe('unassignDeveloperFromTaskService', () => {
+  test('throws when the task does not exist', async (t) => {
+    const taskFindUniqueMock = t.mock.fn(async () => null);
+    prismaMock.task = { findUnique: taskFindUniqueMock };
+
+    await assert.rejects(
+      unassignDeveloperFromTaskService('task-missing'),
+      (error: unknown) => {
+        assert.ok(error instanceof HttpError);
+        assert.equal(error.status, 404);
+        assert.equal(error.message, 'Task not found.');
+        return true;
+      }
+    );
+
+    assert.equal(taskFindUniqueMock.mock.callCount(), 1);
+  });
+
+  test('clears the developer assignment', async (t) => {
+    const taskFindUniqueMock = t.mock.fn(
+      async () =>
+        ({
+          taskId: 'task-123'
+        }) as { taskId: string }
+    );
+    const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => null);
+
+    prismaMock.task = {
+      findUnique: taskFindUniqueMock,
+      update: taskUpdateMock
+    };
+
+    await unassignDeveloperFromTaskService('task-123');
+
+    assert.equal(taskUpdateMock.mock.callCount(), 1);
+    const updateArgs = taskUpdateMock.mock.calls[0].arguments[0];
+    assert.deepEqual(updateArgs, {
+      where: { taskId: 'task-123' },
+      data: { developerId: null }
+    });
+    assert.equal(taskFindUniqueMock.mock.callCount(), 1);
+  });
 });
