@@ -18,17 +18,57 @@ Requires you to have `npm` to get type definitions. Run `npm i` to install libra
 
 # Documentation on design, API and justification
 
+<!-- vscode-markdown-toc -->
+* 1. [General introduction](#Generalintroduction)
+* 2. [Note regarding AI coding asssistant usage](#NoteregardingAIcodingasssistantusage)
+	* 2.1. [Update as of October 14 2025](#UpdateasofOctober142025)
+* 3. [Backend](#Backend)
+	* 3.1. [Database](#Database)
+	* 3.2. [Endpoints](#Endpoints)
+		* 3.2.1. [Create task endpoint](#Createtaskendpoint)
+		* 3.2.2. [Get tasks endpoint](#Gettasksendpoint)
+		* 3.2.3. [Get developers, and assign task to a developer](#Getdevelopersandassigntasktoadeveloper)
+		* 3.2.4. [Set status of a task](#Setstatusofatask)
+	* 3.3. [Libraries](#Libraries)
+* 4. [Frontend](#Frontend)
+	* 4.1. [Libraries](#Libraries-1)
+		* 4.1.1. [Tanstack](#Tanstack)
+		* 4.1.2. [Bootstrap](#Bootstrap)
+		* 4.1.3. [React Toastify](#ReactToastify)
+		* 4.1.4. [Important note regarding libraries](#Importantnoteregardinglibraries)
+	* 4.2. [UI](#UI)
+		* 4.2.1. [Homepage (Task list)](#HomepageTasklist)
+		* 4.2.2. [Create task](#Createtask)
+
+<!-- vscode-markdown-toc-config
+	numbering=true
+	autoSave=true
+	/vscode-markdown-toc-config -->
+<!-- /vscode-markdown-toc -->
+
+##  1. <a name='Generalintroduction'></a>General introduction
+
 With the task being needing full stack application, I've decided to create 2 repositories: [api-task-assignment](https://github.com/lohszeying/api-task-assignment) for backend related tasks, and [ui-task-assignment](https://github.com/lohszeying/ui-task-assignment) for frontend related tasks.
 
 There is a reason why I've decided to split into 2 separate repositories, 1 is for separation of concern. This is to allow ui related context to be stored separately from api. If we combine both api and ui repository into 1 repository, especially in a large project with many developers, there may be "pipeline war" as well, where developers keep having to rebase and wait for pipeline to pass before being able to merge. It's also good to split backend and frontend so that pipeline can be made simpler, by focusing on just 1 part required.
 
 After setting up the initial stages, for example, with vite create react app and creating express application, I started with backend first.
 
-When doing this assignment, I have used the help of tools such as Codex and Gemini with some planning, since this is due in 3 days which is quite tight. I planned to use around 1.5 days for Backend and 1.5 days for Frontend to hopefully complete the base requirement. I looked at the document, and it did not indicate testing is required, although ideally I would want to add unit and end-to-end (e2e) testing using playwright or cypress if I have the time. Also, since I am using Codex, I am frequently using git as a version control.
+##  2. <a name='NoteregardingAIcodingasssistantusage'></a>Note regarding AI coding asssistant usage
+
+Originally, the assignment is due in 3 days.
+
+When doing this assignment, I have used the help of tools such as Codex and Gemini with some planning, since this is due in 3 days which is quite tight and we are allowed to use AI coding assistant or tool.
+
+I planned to use around 1.5 days for Backend and 1.5 days for Frontend to hopefully complete the base requirement. I looked at the document, and it did not indicate testing is required, although ideally I would want to add unit and end-to-end (e2e) testing using playwright or cypress if I have the time. Also, since I am using Codex, I am frequently using git as a version control.
 
 For this assignment, I planned to complete the base features required first, then add README file detailing my thought process, refactor if possible, and then add test, and even extra features if I have time after writing this document.
 
-## Backend
+###  2.1. <a name='UpdateasofOctober142025'></a>Update as of October 14 2025
+
+As of October 14 2025, request for additional 2 more days of extension has been granted, and the new due date is October 15 end of day (11:59pm). I will still be refactoring some parts of the code, and add tests.
+
+##  3. <a name='Backend'></a>Backend
 
 From my experiences with full stack development so far, database schema design is quite important, and it is important to properly think about the schema design.
 
@@ -46,7 +86,7 @@ I used Codex to containerize, and giving instructions to create Makefile as well
 
 Currently, there is no swagger. If given more time, I would love to add swagger for documentation purposes.
 
-### Database
+###  3.1. <a name='Database'></a>Database
 
 Afterwards, I put my focus into database.
 
@@ -62,7 +102,7 @@ I have heard about Sequelize, Knex and TypeORM before for Node applications, but
 
 I went to Google search and Reddit about what ORM to use for Node, and it seems like Prisma is a popular choice for its ease of use, and is still maintained. I've decided to use Prisma since I can use this opportunity to delve more into backend ecosystem using Node. I think it's quite amazing that Prisma can rely on your database connection to help you automatically build relations, and you can use the typings.
 
-### Endpoints
+###  3.2. <a name='Endpoints'></a>Endpoints
 
 After database and ORM has been decided, I started to build endpoints, and also split it into different folders. I decided to start with backend first, while imagining how the frontend would call the backend. This also makes development easier. For example, if I start with frontend first, I would have to keep mocking the response structure with Tweak, which would be a bit more troublesome although still doable.
 
@@ -76,7 +116,7 @@ It is quite useful at a glance to see what endpoints I would need, and it helps 
 
 Regarding endpoint response structure, ideally I would want to go with a standardised approach such as following JSON API convention. However, due to time constraint, I've decided to forgo this for now and get the prototype working first with Codex. In an actual project, ideally there should be guidelines on what convention to follow since there are many developers, each with different styles within a team, so it is good if there is consistency.
 
-#### Create task endpoint
+####  3.2.1. <a name='Createtaskendpoint'></a>Create task endpoint
 
 One of the more interesting endpoints would definitely be get all tasks, and create task.
 
@@ -128,7 +168,7 @@ For the task/subtasks that does not have skills, those task(s) will get its skil
 
 I have also included an optional field `parentTaskId`. Currently this is unused, but in the future, we could have an additional form field in Create Task to directly create a subtask within Create Task page.
 
-#### Get tasks endpoint
+####  3.2.2. <a name='Gettasksendpoint'></a>Get tasks endpoint
 
 From the simple wireframe, it seems like a list of tasks will be displayed, and user can update the status or assignee of a task.
 
@@ -136,7 +176,7 @@ With the addition of subtask feature, I have also included it to return all task
 
 For now, I also did not add pagination to task list. It would be good to add, but this can be for a future enhancement.
 
-#### Get developers, and assign task to a developer
+####  3.2.3. <a name='Getdevelopersandassigntasktoadeveloper'></a>Get developers, and assign task to a developer
 
 ##### Get developers
 
@@ -154,13 +194,13 @@ Hence, I've opted for just using `/developers` [GET] endpoint to return a list o
 
 For a better user experience, I have used optimistic approach. When user clicks on a dropdown selection, we set the dropdown to the one user has selected first and trigger the endpoint, then revert the option when error occurs.
 
-#### Set status of a task
+####  3.2.4. <a name='Setstatusofatask'></a>Set status of a task
 
 According to requirements, in order to set status to "Done", all its subtasks and nested subtasks must be "Done", so a check is done for this status.
 
 Also similar to assigning task to a developer, for a better user experience, I have also used optimistic approach.
 
-### Libraries
+###  3.3. <a name='Libraries'></a>Libraries
 
 The libraries I'm using are `cors`, `@google/genai`, `@prisma/client`, `dotenv`, `express`, `pg` and `prisma`. I believe these are the minimum libraries required.
 
@@ -172,7 +212,7 @@ The libraries I'm using are `cors`, `@google/genai`, `@prisma/client`, `dotenv`,
 - `express` - Web application framework
 - `pg` - For postgres database
 
-## Frontend
+##  4. <a name='Frontend'></a>Frontend
 
 I've used Vite to start a react project, and have chosen React version 19 for React compiler features. While using Codex, I've noticed LLM trying to add `useMemo`, which is not needed anymore in React 19 as React compiler automatically optimizes. This is another thing to note regarding using LLM, where it may use code that are out of date.
 
@@ -180,9 +220,9 @@ I've tried to split the structure of the folder into `components`, `config` to s
 
 For `services`, we put in the base URL. For now, we are still using the same URL constant defined in `config`, but this can scale well into the future if we have more backend URLs.
 
-### Libraries
+###  4.1. <a name='Libraries-1'></a>Libraries
 
-#### Tanstack
+####  4.1.1. <a name='Tanstack'></a>Tanstack
 
 Regarding usage of library, I started off with using Tanstack query. I have heard great things from colleagues about tanstack query, and have added tanstack query during work for one of my project, and have found it very useful. It comes with caching and auto retry with `useQuery`, and we do not need to manually set loading and error state.
 
@@ -192,31 +232,31 @@ While looking through Tanstack query documentation, I noticed there is Tanstack 
 
 Although I will mostly be using Codex to help with this due to time constraint, it will be useful to learn more about its capabilities, and would help me in my future project or work.
 
-#### Bootstrap
+####  4.1.2. <a name='Bootstrap'></a>Bootstrap
 
 I've decided to add Botostrap for styling and layout for its rapid development capabilities.
 
-#### React Toastify
+####  4.1.3. <a name='ReactToastify'></a>React Toastify
 
 I've added React Toastify to display error growl message, which will be helpful for user experience as it's a global pop up to let them know an error has occured with their latest interaction.
 
-#### Important note regarding libraries
+####  4.1.4. <a name='Importantnoteregardinglibraries'></a>Important note regarding libraries
 
 I've choosen to use exact version of the libraries, to ensure the precise same version of dependency and reliable build.
 
 With the recent npm supply chain attack, it is good to pin the versions as well.
 
-### UI
+###  4.2. <a name='UI'></a>UI
 
 Currently the UI is split into 2 pages: Homepage (task list) and create task page.
 
-#### Homepage (Task list)
+####  4.2.1. <a name='HomepageTasklist'></a>Homepage (Task list)
 
 Under task list, I've chosen to only render the parent tasks to reduce complexity, even though the `/tasks` [GET] endpoint still returns subtasks and nested subtasks.
 
 In the future, or if I have time, I am thinking to create another page for Task details instead. In that page, we will render Task title, skills, status and assignee, and user can still edit status or assignee from that page. Then, since that page will call `/tasks/:taskId` [GET] endpoint, that endpoint will return optional `parent` object field and direct `children` array of object field. In that page, I am planning to put a link to parent and children if available, similar to how JIRA display weblinks of parent and children card.
 
-#### Create task
+####  4.2.2. <a name='Createtask'></a>Create task
 
 Currently, I've imposed a limit of max depth of up to 3 subtasks. This is because if we allow infinite subtasks, the UI will not be able to accomodate. In the future, I plan to enable linkage of new task with `parentTaskId` field (which is already available in the API but not on frontend) to link a newly created task to a parent task.
 
