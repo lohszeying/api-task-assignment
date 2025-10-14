@@ -28,5 +28,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 );
 
 CREATE INDEX IF NOT EXISTS idx_tasks_parent_task_id ON tasks (parent_task_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_developer_id ON tasks (developer_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_status_id ON tasks (status_id);
 
 COMMIT;

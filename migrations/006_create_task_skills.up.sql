@@ -16,4 +16,6 @@ CREATE TABLE IF NOT EXISTS task_skills (
     ON DELETE CASCADE
 );
 
+CREATE INDEX IF NOT EXISTS idx_task_skills_skill_id ON task_skills (skill_id);
+
 COMMIT;
