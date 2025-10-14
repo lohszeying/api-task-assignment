@@ -9,5 +9,4 @@ export {
 } from './taskAssignment';
 export { updateTaskStatusService } from './updateTaskStatus';
 export { fetchTaskWithTaskId } from './fetchTaskWithTaskId';
-export { TaskStatusIds } from './constants';
-
+export { TaskStatusId } from './constants';

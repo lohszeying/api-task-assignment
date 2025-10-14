@@ -7,7 +7,7 @@ import {
 } from '../../client/geminiClient';
 import type { CreatedTaskResult } from '../../responseParam/task';
 import { HttpError } from '../errors';
-import { TaskStatusIds } from './constants';
+import { TaskStatusId } from './constants';
 
 export interface TaskCreationPayload {
   title?: string;
@@ -77,7 +77,7 @@ const createTaskRecursive = async (
   const task = await tx.task.create({
     data: {
       title,
-      statusId: TaskStatusIds.Backlog,
+      statusId: TaskStatusId.Backlog,
       developerId: null,
       parentTaskId
     }
@@ -212,4 +212,3 @@ export const createTaskWithSubtasks = async (
 
   return result;
 };
-

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { updateTaskStatusService } from '../updateTaskStatus';
 import { prisma } from '../../../db/client';
 import { HttpError } from '../../errors';
-import { TaskStatusIds } from '../constants';
+import { TaskStatusId } from '../constants';
 
 type PrismaTaskStatusMock = {
   findUnique?: (...args: unknown[]) => unknown;
@@ -86,7 +86,7 @@ describe('updateTaskStatusService', () => {
 
   test('prevents marking task as Done when subtasks are pending', async (t) => {
     const taskStatusFindUniqueMock = t.mock.fn(async () => ({
-      statusId: TaskStatusIds.Done
+      statusId: TaskStatusId.Done
     }));
     const taskFindUniqueMock = t.mock.fn(async () => ({ taskId: 'task-1' }));
     const queryRawMock = t.mock.fn(async () => [{ pending_count: BigInt(2) }]);
@@ -95,7 +95,7 @@ describe('updateTaskStatusService', () => {
     prismaMock.task = { findUnique: taskFindUniqueMock };
     prismaMock.$queryRaw = queryRawMock;
 
-    await assert.rejects(updateTaskStatusService('task-1', TaskStatusIds.Done), (error: unknown) => {
+    await assert.rejects(updateTaskStatusService('task-1', TaskStatusId.Done), (error: unknown) => {
       assert.ok(error instanceof HttpError);
       assert.equal(error.status, 400);
       assert.equal(
@@ -144,7 +144,7 @@ describe('updateTaskStatusService', () => {
 
   test('allows Done status when no pending subtasks remain', async (t) => {
     const taskStatusFindUniqueMock = t.mock.fn(async () => ({
-      statusId: TaskStatusIds.Done
+      statusId: TaskStatusId.Done
     }));
     const taskFindUniqueMock = t.mock.fn(async () => ({ taskId: 'task-1' }));
     const queryRawMock = t.mock.fn(async () => [{ pending_count: BigInt(0) }]);
@@ -157,7 +157,7 @@ describe('updateTaskStatusService', () => {
     };
     prismaMock.$queryRaw = queryRawMock;
 
-    await updateTaskStatusService('task-1', TaskStatusIds.Done);
+    await updateTaskStatusService('task-1', TaskStatusId.Done);
 
     assert.equal(queryRawMock.mock.callCount(), 1);
     assert.equal(taskUpdateMock.mock.callCount(), 1);
@@ -168,7 +168,7 @@ describe('updateTaskStatusService', () => {
     const updateArgs = arg0 as Record<string, unknown>;
     assert.deepEqual(updateArgs, {
       where: { taskId: 'task-1' },
-      data: { statusId: TaskStatusIds.Done }
+      data: { statusId: TaskStatusId.Done }
     });
   });
 });

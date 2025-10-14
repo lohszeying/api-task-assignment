@@ -11,7 +11,7 @@ import {
   getTaskById
 } from '../taskController';
 import { prisma } from '../../db/client';
-import { TaskStatusIds } from '../../services/task';
+import { TaskStatusId } from '../../services/task';
 
 type PrismaTaskDelegate = {
   findMany?: (...args: unknown[]) => unknown;
@@ -191,7 +191,7 @@ describe('taskController.createTask', () => {
     setupTransaction(async ({ data }) => ({
       taskId: data.title === 'Feature' ? 'task-root' : 'task-child',
       title: data.title,
-      statusId: TaskStatusIds.Backlog
+      statusId: TaskStatusId.Backlog
     }));
 
     const { res, getStatus, getBody } = createMockResponse();
@@ -211,14 +211,14 @@ describe('taskController.createTask', () => {
     assert.deepEqual(body, {
       taskId: 'task-root',
       title: 'Feature',
-      statusId: TaskStatusIds.Backlog,
+      statusId: TaskStatusId.Backlog,
       developerId: null,
       skills: [{ skillId: 1, skillName: 'Frontend' }],
       subtasks: [
         {
           taskId: 'task-child',
           title: 'API',
-          statusId: TaskStatusIds.Backlog,
+          statusId: TaskStatusId.Backlog,
           developerId: null,
           skills: [{ skillId: 2, skillName: 'Backend' }],
           subtasks: undefined
@@ -345,7 +345,7 @@ describe('taskController.updateTaskStatus', () => {
 
   test('returns error when subtasks are pending for Done status', async () => {
     prismaMock.taskStatus = {
-      findUnique: async () => ({ statusId: TaskStatusIds.Done, statusName: 'Done' })
+      findUnique: async () => ({ statusId: TaskStatusId.Done, statusName: 'Done' })
     };
     prismaMock.task = {
       findUnique: async () => ({ taskId: 'task-1' }),
@@ -356,7 +356,7 @@ describe('taskController.updateTaskStatus', () => {
     const { res, getStatus, getBody } = createMockResponse();
     const req = {
       params: { taskId: 'task-1' },
-      body: { statusId: TaskStatusIds.Done }
+      body: { statusId: TaskStatusId.Done }
     } as unknown as Request;
 
     await updateTaskStatus(req, res);

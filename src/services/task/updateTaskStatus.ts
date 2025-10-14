@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../db/client';
 import { HttpError } from '../errors';
-import { TaskStatusIds } from './constants';
+import { TaskStatusId } from './constants';
 
 export const updateTaskStatusService = async (
   taskId: string,
@@ -38,7 +38,7 @@ export const updateTaskStatusService = async (
     throw new HttpError(404, 'Task not found.');
   }
 
-  if (statusRecord.statusId === TaskStatusIds.Done) {
+  if (statusRecord.statusId === TaskStatusId.Done) {
     const [result] = await prisma.$queryRaw<{ pending_count: bigint }[]>(
       Prisma.sql`
         WITH RECURSIVE descendants AS (
@@ -52,7 +52,7 @@ export const updateTaskStatusService = async (
         )
         SELECT COUNT(*)::bigint AS pending_count
         FROM descendants
-        WHERE task_id <> ${taskId}::uuid AND status_id <> ${TaskStatusIds.Done};
+        WHERE task_id <> ${taskId}::uuid AND status_id <> ${TaskStatusId.Done};
       `
     );
 
@@ -67,4 +67,3 @@ export const updateTaskStatusService = async (
     data: { statusId: statusRecord.statusId }
   });
 };
-

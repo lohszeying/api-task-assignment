@@ -1,4 +1,4 @@
-export enum TaskStatusIds {
+export enum TaskStatusId {
   Backlog = 1,
   ReadyForDevelopment = 2,
   InProgress = 3,
