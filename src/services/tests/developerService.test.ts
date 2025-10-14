@@ -18,7 +18,7 @@ test.afterEach(() => {
 
 describe('fetchDevelopers', () => {
   test('returns developers without filtering when skill param is missing', async (t) => {
-    const findManyMock = t.mock.fn(async () => [
+    const findManyMock = t.mock.fn(async (_args: unknown) => [
       {
         developerId: 'dev-1',
         developerName: 'Alice',
@@ -34,8 +34,11 @@ describe('fetchDevelopers', () => {
     const result = await fetchDevelopers(undefined as unknown as string);
 
     assert.equal(findManyMock.mock.callCount(), 1);
-    const args = findManyMock.mock.calls[0].arguments[0] as Record<string, unknown>;
-    assert.ok(args);
+    const firstCall = findManyMock.mock.calls[0];
+    assert.ok(firstCall);
+    const [arg0] = firstCall.arguments;
+    assert.ok(arg0 && typeof arg0 === 'object');
+    const args = arg0 as Record<string, unknown>;
     assert.equal(args.where, undefined);
     assert.deepEqual(result, [
       {
@@ -50,13 +53,17 @@ describe('fetchDevelopers', () => {
   });
 
   test('filters developers by required skills when provided', async (t) => {
-    const findManyMock = t.mock.fn(async () => []);
+    const findManyMock = t.mock.fn(async (_args: unknown) => []);
     prismaMock.developer = { findMany: findManyMock };
 
     await fetchDevelopers('1, 2 ,3');
 
     assert.equal(findManyMock.mock.callCount(), 1);
-    const args = findManyMock.mock.calls[0].arguments[0] as Record<string, unknown>;
+    const firstCall = findManyMock.mock.calls[0];
+    assert.ok(firstCall);
+    const [arg0] = firstCall.arguments;
+    assert.ok(arg0 && typeof arg0 === 'object');
+    const args = arg0 as Record<string, unknown>;
     assert.deepEqual(args.where, {
       AND: [
         { skills: { some: { skillId: 1 } } },
@@ -82,4 +89,3 @@ describe('fetchDevelopers', () => {
     });
   });
 });
-

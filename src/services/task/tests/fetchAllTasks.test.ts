@@ -16,7 +16,7 @@ test.afterEach(() => {
 });
 
 test('fetchAllTasks maps hierarchical task data', async (t) => {
-  const findManyMock = t.mock.fn(async () => [
+  const findManyMock = t.mock.fn(async (_args: unknown) => [
     {
       taskId: 'task-parent',
       title: 'Parent',
@@ -40,7 +40,11 @@ test('fetchAllTasks maps hierarchical task data', async (t) => {
   const result = await fetchAllTasks();
 
   assert.equal(findManyMock.mock.callCount(), 1);
-  const args = findManyMock.mock.calls[0].arguments[0] as Record<string, unknown>;
+  const firstCall = findManyMock.mock.calls[0];
+  assert.ok(firstCall);
+  const [arg0] = firstCall.arguments;
+  assert.ok(arg0 && typeof arg0 === 'object');
+  const args = arg0 as Record<string, unknown>;
   assert.deepEqual(args, {
     include: {
       skills: { include: { skill: true } },
@@ -69,4 +73,3 @@ test('fetchAllTasks maps hierarchical task data', async (t) => {
     }
   ]);
 });
-

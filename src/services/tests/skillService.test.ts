@@ -17,7 +17,7 @@ test.afterEach(() => {
 
 describe('fetchSkills', () => {
   test('returns ordered skill summaries', async (t) => {
-    const findManyMock = t.mock.fn(async () => [
+    const findManyMock = t.mock.fn(async (_args: unknown) => [
       { skillId: 1, skillName: 'Frontend' },
       { skillId: 2, skillName: 'Backend' }
     ]);
@@ -27,7 +27,11 @@ describe('fetchSkills', () => {
     const result = await fetchSkills();
 
     assert.equal(findManyMock.mock.callCount(), 1);
-    const args = findManyMock.mock.calls[0].arguments[0] as Record<string, unknown>;
+    const firstCall = findManyMock.mock.calls[0];
+    assert.ok(firstCall);
+    const [arg0] = firstCall.arguments;
+    assert.ok(arg0 && typeof arg0 === 'object');
+    const args = arg0 as Record<string, unknown>;
     assert.deepEqual(args, {
       select: { skillId: true, skillName: true },
       orderBy: { skillId: 'asc' }
@@ -38,4 +42,3 @@ describe('fetchSkills', () => {
     ]);
   });
 });
-

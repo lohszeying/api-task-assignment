@@ -116,7 +116,7 @@ describe('updateTaskStatusService', () => {
     }));
     const taskFindUniqueMock = t.mock.fn(async () => ({ taskId: 'task-1' }));
     const queryRawMock = t.mock.fn(async () => [{ pending_count: BigInt(0) }]);
-    const taskUpdateMock = t.mock.fn(async () => null);
+    const taskUpdateMock = t.mock.fn(async (_args: unknown) => null);
 
     prismaMock.taskStatus = { findUnique: taskStatusFindUniqueMock };
     prismaMock.task = {
@@ -131,7 +131,11 @@ describe('updateTaskStatusService', () => {
     assert.equal(taskFindUniqueMock.mock.callCount(), 1);
     assert.equal(queryRawMock.mock.callCount(), 0);
     assert.equal(taskUpdateMock.mock.callCount(), 1);
-    const updateArgs = taskUpdateMock.mock.calls[0].arguments[0] as Record<string, unknown>;
+    const firstCall = taskUpdateMock.mock.calls[0];
+    assert.ok(firstCall);
+    const [arg0] = firstCall.arguments;
+    assert.ok(arg0 && typeof arg0 === 'object');
+    const updateArgs = arg0 as Record<string, unknown>;
     assert.deepEqual(updateArgs, {
       where: { taskId: 'task-1' },
       data: { statusId: 3 }
@@ -144,7 +148,7 @@ describe('updateTaskStatusService', () => {
     }));
     const taskFindUniqueMock = t.mock.fn(async () => ({ taskId: 'task-1' }));
     const queryRawMock = t.mock.fn(async () => [{ pending_count: BigInt(0) }]);
-    const taskUpdateMock = t.mock.fn(async () => null);
+    const taskUpdateMock = t.mock.fn(async (_args: unknown) => null);
 
     prismaMock.taskStatus = { findUnique: taskStatusFindUniqueMock };
     prismaMock.task = {
@@ -157,7 +161,11 @@ describe('updateTaskStatusService', () => {
 
     assert.equal(queryRawMock.mock.callCount(), 1);
     assert.equal(taskUpdateMock.mock.callCount(), 1);
-    const updateArgs = taskUpdateMock.mock.calls[0].arguments[0] as Record<string, unknown>;
+    const firstCall = taskUpdateMock.mock.calls[0];
+    assert.ok(firstCall);
+    const [arg0] = firstCall.arguments;
+    assert.ok(arg0 && typeof arg0 === 'object');
+    const updateArgs = arg0 as Record<string, unknown>;
     assert.deepEqual(updateArgs, {
       where: { taskId: 'task-1' },
       data: { statusId: TaskStatusIds.Done }

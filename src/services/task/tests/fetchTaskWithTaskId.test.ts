@@ -18,7 +18,7 @@ test.afterEach(() => {
 
 describe('fetchTaskWithTaskId', () => {
   test('throws when the task is not found', async (t) => {
-    const findUniqueMock = t.mock.fn(async () => null);
+    const findUniqueMock = t.mock.fn(async (_args: unknown) => null);
     prismaMock.task = { findUnique: findUniqueMock };
 
     await assert.rejects(fetchTaskWithTaskId('missing-id'), (error: unknown) => {
@@ -29,12 +29,16 @@ describe('fetchTaskWithTaskId', () => {
     });
 
     assert.equal(findUniqueMock.mock.callCount(), 1);
-    const args = findUniqueMock.mock.calls[0].arguments[0] as Record<string, unknown>;
+    const firstCall = findUniqueMock.mock.calls[0];
+    assert.ok(firstCall);
+    const [arg0] = firstCall.arguments;
+    assert.ok(arg0 && typeof arg0 === 'object');
+    const args = arg0 as Record<string, unknown>;
     assert.deepEqual(args.where, { taskId: 'missing-id' });
   });
 
   test('returns task details with relations', async (t) => {
-    const findUniqueMock = t.mock.fn(async () => ({
+    const findUniqueMock = t.mock.fn(async (_args: unknown) => ({
       taskId: 'task-123',
       title: 'Build feature',
       status: { statusId: 1, statusName: 'Backlog' },
@@ -83,4 +87,3 @@ describe('fetchTaskWithTaskId', () => {
     });
   });
 });
-

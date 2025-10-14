@@ -165,7 +165,11 @@ describe('taskController.createTask', () => {
       callback({
         task: {
           findUnique: async () => ({ taskId: 'parent-existing' }),
-          create: taskCreate
+          create: async (...args: unknown[]) => {
+            const [firstArg] = args;
+            assert.ok(firstArg && typeof firstArg === 'object');
+            return taskCreate(firstArg as { data: Record<string, unknown> });
+          }
         },
         taskSkill: {
           createMany: async () => null
