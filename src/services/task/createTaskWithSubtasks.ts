@@ -7,7 +7,7 @@ import {
 } from '../../client/geminiClient';
 import type { CreatedTaskResult } from '../../responseParam/task';
 import { HttpError } from '../errors';
-import { TaskStatusId } from './constants';
+import { TaskStatusId, MAX_TASK_NESTING_DEPTH } from './constants';
 
 export interface TaskCreationPayload {
   title?: string;
@@ -61,10 +61,15 @@ const createTaskRecursive = async (
   payload: TaskCreationPayload,
   parentTaskId: string | null,
   tx: Prisma.TransactionClient,
-  context: TaskCreationContext
+  context: TaskCreationContext,
+  depth: number = 0
 ): Promise<CreatedTaskResult> => {
   if (!payload || typeof payload !== 'object') {
     throw new HttpError(400, 'Invalid task payload.');
+  }
+
+  if (depth > MAX_TASK_NESTING_DEPTH) {
+    throw new HttpError(400, `Maximum task nesting depth of ${MAX_TASK_NESTING_DEPTH} levels exceeded.`);
   }
 
   const title = typeof payload.title === 'string' ? payload.title.trim() : '';
@@ -99,7 +104,7 @@ const createTaskRecursive = async (
   const subtasks: CreatedTaskResult[] = [];
 
   for (const subtaskPayload of subtasksPayload) {
-    const child = await createTaskRecursive(subtaskPayload, task.taskId, tx, context);
+    const child = await createTaskRecursive(subtaskPayload, task.taskId, tx, context, depth + 1);
     subtasks.push(child);
   }
 

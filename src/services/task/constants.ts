@@ -7,3 +7,5 @@ export enum TaskStatusId {
   Done = 6
 }
 
+export const MAX_TASK_NESTING_DEPTH = 3;
+
