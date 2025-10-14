@@ -62,7 +62,7 @@ When doing this assignment, I have used the help of tools such as Codex and Gemi
 
 I planned to use around 1.5 days for Backend and 1.5 days for Frontend to hopefully complete the base requirement. I looked at the document, and it did not indicate testing is required, although ideally I would want to add unit and end-to-end (e2e) testing using playwright or cypress if I have the time. Also, since I am using Codex, I am frequently using git as a version control.
 
-For this assignment, I planned to complete the base features required first, then add README file detailing my thought process, refactor if possible, and then add test, and even extra features if I have time after writing this document.
+For this assignment, I planned to complete the base features required first, then add README file detailing my thought process, refactor if possible, and then add test. For now, I will not be adding new feature of viewing task page, as for every code that is written by LLM, I would have to check on it and currently I don't think I have enough time for now.
 
 ###  2.1. <a name='UpdateasofOctober142025'></a>Update as of October 14 2025
 
