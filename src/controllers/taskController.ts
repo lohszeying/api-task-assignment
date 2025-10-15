@@ -4,7 +4,6 @@ import {
   createTaskWithSubtasks,
   assignDeveloperToTaskService,
   updateTaskStatusService,
-  fetchTaskWithTaskId,
   unassignDeveloperFromTaskService
 } from '../services/task';
 import { handleError } from '../utils/error';
@@ -81,17 +80,5 @@ export const updateTaskStatus = async (req: Request, res: Response) => {
     res.status(204).send();
   } catch (error) {
     handleError(error, res, 'Failed to update task status');
-  }
-};
-
-// Note: Currently unused by frontend.
-export const getTaskById = async (req: Request, res: Response) => {
-  const { taskId } = req.params;
-
-  try {
-    const task = await fetchTaskWithTaskId(taskId);
-    res.json(task);
-  } catch (error) {
-    handleError(error, res, 'Failed to fetch task');
   }
 };

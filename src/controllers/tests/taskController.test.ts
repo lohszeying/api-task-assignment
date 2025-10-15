@@ -8,7 +8,6 @@ import {
   assignDeveloperToTask,
   unassignDeveloperFromTask,
   updateTaskStatus,
-  getTaskById
 } from '../taskController';
 import { prisma } from '../../db/client';
 import { TaskStatusId } from '../../services/task';
@@ -392,48 +391,3 @@ describe('taskController.updateTaskStatus', () => {
   });
 });
 
-describe('taskController.getTaskById', () => {
-  test('returns task details', async () => {
-    prismaMock.task = {
-      findUnique: async () => ({
-        taskId: 'task-1',
-        title: 'Feature',
-        status: { statusId: 1, statusName: 'Backlog' },
-        developer: null,
-        skills: [{ skill: { skillName: 'Frontend' } }],
-        parent: null,
-        children: []
-      })
-    };
-
-    const { res, getBody, getStatus } = createMockResponse();
-    const req = { params: { taskId: 'task-1' } } as unknown as Request;
-
-    await getTaskById(req, res);
-
-    assert.equal(getStatus(), undefined);
-    assert.deepEqual(getBody(), {
-      taskId: 'task-1',
-      title: 'Feature',
-      status: { statusId: 1, statusName: 'Backlog' },
-      skills: ['Frontend'],
-      developer: null,
-      parent: undefined,
-      children: undefined
-    });
-  });
-
-  test('returns 404 when task is missing', async () => {
-    prismaMock.task = {
-      findUnique: async () => null
-    };
-
-    const { res, getStatus, getBody } = createMockResponse();
-    const req = { params: { taskId: 'missing' } } as unknown as Request;
-
-    await getTaskById(req, res);
-
-    assert.equal(getStatus(), 404);
-    assert.deepEqual(getBody(), { message: 'Task not found.' });
-  });
-});

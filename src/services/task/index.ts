@@ -8,6 +8,5 @@ export {
   unassignDeveloperFromTaskService
 } from './taskAssignment';
 export { updateTaskStatusService } from './updateTaskStatus';
-export { fetchTaskWithTaskId } from './fetchTaskWithTaskId';
 export { TaskStatusId } from './constants';
 export { validateTaskStatusIds } from './validateConstants';
