@@ -9,7 +9,7 @@ GET {{baseUrl}}/skills
 ###
 // Get developers
 // Optional query parma: skill, eg. ?skill=1 or ?skill=1,2
-GET {{baseUrl}}/developers?skills=asdasd
+GET {{baseUrl}}/developers
 
 ###
 // Get all statuses
