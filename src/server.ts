@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { createApp } from './app';
 import { shutdownDatabase, verifyDatabaseConnection } from './db/client';
+import { validateTaskStatusIds } from './services/task/validateConstants';
 
 const port = Number(process.env.PORT || 3000);
 
@@ -10,8 +11,10 @@ const start = async () => {
   try {
     await verifyDatabaseConnection();
     console.log('Connected to Postgres');
+
+    await validateTaskStatusIds();
   } catch (error) {
-    console.error('Failed to connect to Postgres', error);
+    console.error('Failed to start server:', error);
     process.exit(1);
   }
 
