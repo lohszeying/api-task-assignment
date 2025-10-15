@@ -74,7 +74,7 @@ PATCH {{baseUrl}}/tasks/60a7aa66-8eed-499b-be7f-78ac158d8094/status
 content-type: application/json
 
 {
-    "statusId": "2"
+    "statusId": 3
 }
 
 ###
