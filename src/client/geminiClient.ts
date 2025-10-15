@@ -91,6 +91,7 @@ export const inferSkillsForTasks = async (
   try {
     return JSON.parse(text) as Record<string, number[]>;
   } catch (error) {
-    throw new Error('Gemini returned an invalid JSON response.');
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Gemini returned invalid JSON: ${message}\nResponse: ${text}`);
   }
 };
