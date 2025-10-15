@@ -36,7 +36,10 @@ test.afterEach(() => {
 describe('updateTaskStatusService', () => {
   test('throws when the status does not exist', async (t) => {
     const taskStatusFindUniqueMock = t.mock.fn(async () => null);
+    const taskFindUniqueMock = t.mock.fn(async () => ({ taskId: 'task-1' }));
+
     prismaMock.taskStatus = { findUnique: taskStatusFindUniqueMock };
+    prismaMock.task = { findUnique: taskFindUniqueMock };
 
     await assert.rejects(updateTaskStatusService('task-1', 99), (error: unknown) => {
       assert.ok(error instanceof HttpError);
@@ -46,6 +49,7 @@ describe('updateTaskStatusService', () => {
     });
 
     assert.equal(taskStatusFindUniqueMock.mock.callCount(), 1);
+    assert.equal(taskFindUniqueMock.mock.callCount(), 1);
   });
 
   test('throws when the task does not exist', async (t) => {

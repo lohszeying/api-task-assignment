@@ -7,18 +7,14 @@ export const updateTaskStatusService = async (
   taskId: string,
   statusId: number
 ): Promise<void> => {
-  const statusRecord = await prisma.taskStatus.findUnique({
-    where: { statusId }
-  });
+  const [statusRecord, taskExists] = await Promise.all([
+    prisma.taskStatus.findUnique({ where: { statusId } }),
+    prisma.task.findUnique({ where: { taskId }, select: { taskId: true } })
+  ]);
 
   if (!statusRecord) {
     throw new HttpError(404, 'Status not found.');
   }
-
-  const taskExists = await prisma.task.findUnique({
-    where: { taskId },
-    select: { taskId: true }
-  });
 
   if (!taskExists) {
     throw new HttpError(404, 'Task not found.');

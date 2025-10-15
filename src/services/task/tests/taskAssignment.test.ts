@@ -44,8 +44,13 @@ test.afterEach(() => {
 
 describe('assignDeveloperToTaskService', () => {
   test('throws when the task does not exist', async (t) => {
-    const findUniqueMock = t.mock.fn(async () => null);
-    prismaMock.task = { findUnique: findUniqueMock };
+    const taskFindUniqueMock = t.mock.fn(async () => null);
+    const developerFindUniqueMock = t.mock.fn(
+      async () => ({ developerId: 'dev-1', skills: [] }) as DeveloperWithSkills
+    );
+
+    prismaMock.task = { findUnique: taskFindUniqueMock };
+    prismaMock.developer = { findUnique: developerFindUniqueMock };
 
     await assert.rejects(
       assignDeveloperToTaskService('task-missing', 'dev-1'),
@@ -57,7 +62,8 @@ describe('assignDeveloperToTaskService', () => {
       }
     );
 
-    assert.equal(findUniqueMock.mock.callCount(), 1);
+    assert.equal(taskFindUniqueMock.mock.callCount(), 1);
+    assert.equal(developerFindUniqueMock.mock.callCount(), 1);
   });
 
   test('assigns when no skills are required', async (t) => {
@@ -70,9 +76,13 @@ describe('assignDeveloperToTaskService', () => {
         }) as TaskWithSkills
     );
     const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => null);
-    const developerFindUniqueMock = t.mock.fn(async () => {
-      throw new Error('Developer lookup should not be triggered when no skills are required.');
-    });
+    const developerFindUniqueMock = t.mock.fn(
+      async () =>
+        ({
+          developerId: 'dev-456',
+          skills: []
+        }) as DeveloperWithSkills
+    );
 
     prismaMock.task = {
       findUnique: taskFindUniqueMock,
@@ -90,7 +100,8 @@ describe('assignDeveloperToTaskService', () => {
       where: { taskId: 'task-123' },
       data: { developerId: 'dev-456' }
     });
-    assert.equal(developerFindUniqueMock.mock.callCount(), 0);
+    assert.equal(taskFindUniqueMock.mock.callCount(), 1);
+    assert.equal(developerFindUniqueMock.mock.callCount(), 1);
   });
 
   test('throws when the developer does not exist', async (t) => {
