@@ -38,8 +38,9 @@ export const assignDeveloperToTaskService = async (
   }
 
   const developerSkillIds = developer.skills.map((skill) => skill.skillId);
+  const developerSkillSet = new Set(developerSkillIds);
   const hasAllSkills = requiredSkillIds.every((skillId) =>
-    developerSkillIds.includes(skillId)
+    developerSkillSet.has(skillId)
   );
 
   if (!hasAllSkills) {
