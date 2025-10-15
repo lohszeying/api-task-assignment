@@ -69,7 +69,12 @@ export const unassignDeveloperFromTask = async (req: Request, res: Response) => 
 
 export const updateTaskStatus = async (req: Request, res: Response) => {
   const { taskId } = req.params;
-  const statusId = (req.body as Record<string, unknown>)?.statusId as number | undefined;
+  const { statusId } = req.body;
+
+  if (typeof statusId !== 'number' || !Number.isInteger(statusId)) {
+    res.status(400).json({ message: 'statusId must be an integer.' });
+    return;
+  }
 
   try {
     await updateTaskStatusService(taskId, statusId);

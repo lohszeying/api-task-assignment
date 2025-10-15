@@ -34,24 +34,6 @@ test.afterEach(() => {
 });
 
 describe('updateTaskStatusService', () => {
-  test('requires a statusId', async () => {
-    await assert.rejects(updateTaskStatusService('task-1', undefined), (error: unknown) => {
-      assert.ok(error instanceof HttpError);
-      assert.equal(error.status, 400);
-      assert.equal(error.message, 'statusId is required.');
-      return true;
-    });
-  });
-
-  test('rejects non-integer status identifiers', async () => {
-    await assert.rejects(updateTaskStatusService('task-1', 1.5), (error: unknown) => {
-      assert.ok(error instanceof HttpError);
-      assert.equal(error.status, 400);
-      assert.equal(error.message, 'statusId must be an integer.');
-      return true;
-    });
-  });
-
   test('throws when the status does not exist', async (t) => {
     const taskStatusFindUniqueMock = t.mock.fn(async () => null);
     prismaMock.taskStatus = { findUnique: taskStatusFindUniqueMock };

@@ -320,6 +320,32 @@ describe('taskController.unassignDeveloperFromTask', () => {
 });
 
 describe('taskController.updateTaskStatus', () => {
+  test('validates statusId is a number', async () => {
+    const { res, getStatus, getBody } = createMockResponse();
+    const req = {
+      params: { taskId: 'task-1' },
+      body: { statusId: '2' }
+    } as unknown as Request;
+
+    await updateTaskStatus(req, res);
+
+    assert.equal(getStatus(), 400);
+    assert.deepEqual(getBody(), { message: 'statusId must be an integer.' });
+  });
+
+  test('validates statusId is an integer', async () => {
+    const { res, getStatus, getBody } = createMockResponse();
+    const req = {
+      params: { taskId: 'task-1' },
+      body: { statusId: 2.5 }
+    } as unknown as Request;
+
+    await updateTaskStatus(req, res);
+
+    assert.equal(getStatus(), 400);
+    assert.deepEqual(getBody(), { message: 'statusId must be an integer.' });
+  });
+
   test('updates to a non-Done status', async () => {
     prismaMock.taskStatus = {
       findUnique: async () => ({ statusId: 2, statusName: 'In Progress' })

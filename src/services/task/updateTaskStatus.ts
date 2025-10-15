@@ -5,16 +5,8 @@ import { TaskStatusId } from './constants';
 
 export const updateTaskStatusService = async (
   taskId: string,
-  statusId: number | undefined
+  statusId: number
 ): Promise<void> => {
-  if (statusId === undefined) {
-    throw new HttpError(400, 'statusId is required.');
-  }
-
-  if (!Number.isInteger(statusId)) {
-    throw new HttpError(400, 'statusId must be an integer.');
-  }
-
   const statusRecord = await prisma.taskStatus.findUnique({
     where: { statusId }
   });
