@@ -167,8 +167,6 @@ Then looking at how we have subtask feature, I planned to let users be able to s
 
 For the task/subtasks that does not have skills, those task(s) will get its skills from LLM.
 
-I have also included an optional field `parentTaskId`. Currently this is unused, but in the future, we could have an additional form field in Create Task to directly create a subtask within Create Task page.
-
 ####  3.2.2. <a name='Gettasksendpoint'></a>Get tasks endpoint
 
 From the simple wireframe, it seems like a list of tasks will be displayed, and user can update the status or assignee of a task.
