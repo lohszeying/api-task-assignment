@@ -67,10 +67,7 @@ export const unassignDeveloperFromTask = async (req: Request, res: Response) => 
 
 export const updateTaskStatus = async (req: Request, res: Response) => {
   const { taskId } = req.params;
-  const statusId = (req.body as Record<string, unknown>)?.statusId as
-    | number
-    | string
-    | undefined;
+  const statusId = (req.body as Record<string, unknown>)?.statusId as number | undefined;
 
   try {
     await updateTaskStatusService(taskId, statusId);

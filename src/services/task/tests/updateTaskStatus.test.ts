@@ -44,7 +44,7 @@ describe('updateTaskStatusService', () => {
   });
 
   test('rejects non-integer status identifiers', async () => {
-    await assert.rejects(updateTaskStatusService('task-1', 'abc'), (error: unknown) => {
+    await assert.rejects(updateTaskStatusService('task-1', 1.5), (error: unknown) => {
       assert.ok(error instanceof HttpError);
       assert.equal(error.status, 400);
       assert.equal(error.message, 'statusId must be an integer.');
@@ -125,7 +125,7 @@ describe('updateTaskStatusService', () => {
     };
     prismaMock.$queryRaw = queryRawMock;
 
-    await updateTaskStatusService('task-1', '3');
+    await updateTaskStatusService('task-1', 3);
 
     assert.equal(taskStatusFindUniqueMock.mock.callCount(), 1);
     assert.equal(taskFindUniqueMock.mock.callCount(), 1);
