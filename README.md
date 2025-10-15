@@ -219,7 +219,7 @@ I've used Vite to start a react project, and have chosen React version 19 for Re
 
 I've tried to split the structure of the folder into `components`, `config` to store URL information if there are more backend URLs in the future (eg. microservice or third party), `lib` for reusable http client code, `features` for utilities broken down by features, `pages` for the different pages, and `services` for calling endpoints.
 
-For `services`, we put in the base URL. For now, we are still using the same URL constant defined in `config`, but this can scale well into the future if we have more backend URLs.
+For `services`, we put in the base URL. For now, we are still using the same URL constant defined in `config`, but this can scale well into the future if we have more backend URLs. For example, if there is clickstream service in the future that calls a third party, we only need to define once, under Clickstream baseUrl.
 
 ###  4.1. <a name='Libraries-1'></a>Libraries
 
