@@ -25,6 +25,10 @@ interface TaskCreationContext {
   inferredSkills: Map<string, number[]>;
 }
 
+const buildTempId = (indexPath: number[]): string => {
+  return indexPath.length === 0 ? 'root' : indexPath.join('-');
+};
+
 const normaliseSkills = (
   skills: number[] | undefined,
   context: TaskCreationContext
@@ -75,7 +79,7 @@ const collectTasksNeedingInference = (
   }
 
   const tasks: TaskForInference[] = [];
-  const tempId = indexPath.join('-') || '0';
+  const tempId = buildTempId(indexPath);
 
   // If no skills provided, add to inference list
   if (!Array.isArray(payload.skills) || payload.skills.length === 0) {
@@ -98,7 +102,7 @@ const createTaskRecursive = async (
   context: TaskCreationContext,
   indexPath: number[] = []
 ): Promise<CreatedTaskResult> => {
-  const tempId = indexPath.join('-') || '0';
+  const tempId = buildTempId(indexPath);
   const title = payload.title as string;
 
   // Use inferred skills if available, otherwise use provided skills
