@@ -16,6 +16,7 @@ export interface TaskCreationPayload {
 }
 
 interface TaskForInference {
+  tempId: string;
   title: string;
   payload: TaskCreationPayload;
 }
@@ -59,7 +60,8 @@ const normaliseSkills = (
 
 const collectTasksNeedingInference = (
   payload: TaskCreationPayload,
-  depth: number = 0
+  depth: number = 0,
+  indexPath: number[] = []
 ): TaskForInference[] => {
   if (!payload || typeof payload !== 'object') {
     throw new HttpError(400, 'Invalid task payload.');
@@ -75,16 +77,17 @@ const collectTasksNeedingInference = (
   }
 
   const tasks: TaskForInference[] = [];
+  const tempId = indexPath.join('-') || '0';
 
   // If no skills provided, add to inference list
   if (!Array.isArray(payload.skills) || payload.skills.length === 0) {
-    tasks.push({ title, payload });
+    tasks.push({ tempId, title, payload });
   }
 
   // Recursively collect from subtasks
   const subtasksPayload = Array.isArray(payload.subtasks) ? payload.subtasks : [];
-  for (const subtaskPayload of subtasksPayload) {
-    tasks.push(...collectTasksNeedingInference(subtaskPayload, depth + 1));
+  for (let i = 0; i < subtasksPayload.length; i++) {
+    tasks.push(...collectTasksNeedingInference(subtasksPayload[i], depth + 1, [...indexPath, i]));
   }
 
   return tasks;
@@ -95,23 +98,13 @@ const createTaskRecursive = async (
   parentTaskId: string | null,
   tx: Prisma.TransactionClient,
   context: TaskCreationContext,
-  depth: number = 0
+  indexPath: number[] = []
 ): Promise<CreatedTaskResult> => {
-  if (!payload || typeof payload !== 'object') {
-    throw new HttpError(400, 'Invalid task payload.');
-  }
-
-  if (depth > MAX_TASK_NESTING_DEPTH) {
-    throw new HttpError(400, `Maximum task nesting depth of ${MAX_TASK_NESTING_DEPTH} levels exceeded.`);
-  }
-
-  const title = typeof payload.title === 'string' ? payload.title.trim() : '';
-  if (!title) {
-    throw new HttpError(400, 'Task title is required.');
-  }
+  const title = (payload.title as string).trim();
+  const tempId = indexPath.join('-') || '0';
 
   // Use inferred skills if available, otherwise use provided skills
-  const skillsToUse = context.inferredSkills.get(title) || payload.skills;
+  const skillsToUse = context.inferredSkills.get(tempId) || payload.skills;
   const matchedSkills = normaliseSkills(skillsToUse, context);
 
   const task = await tx.task.create({
@@ -136,8 +129,8 @@ const createTaskRecursive = async (
   const subtasksPayload = Array.isArray(payload.subtasks) ? payload.subtasks : [];
   const subtasks: CreatedTaskResult[] = [];
 
-  for (const subtaskPayload of subtasksPayload) {
-    const child = await createTaskRecursive(subtaskPayload, task.taskId, tx, context, depth + 1);
+  for (let i = 0; i < subtasksPayload.length; i++) {
+    const child = await createTaskRecursive(subtasksPayload[i], task.taskId, tx, context, [...indexPath, i]);
     subtasks.push(child);
   }
 
@@ -164,9 +157,8 @@ const inferSkillsBeforeCreation = async (
     return new Map();
   }
 
-  // Create temporary task IDs for Gemini (we'll use titles as keys)
-  const taskDescriptors: TaskDescriptor[] = tasksNeedingInference.map((task, index) => ({
-    taskId: `temp-${index}`,
+  const taskDescriptors: TaskDescriptor[] = tasksNeedingInference.map((task) => ({
+    taskId: task.tempId,
     description: task.title
   }));
 
@@ -177,10 +169,8 @@ const inferSkillsBeforeCreation = async (
 
   const inferredSkills = new Map<string, number[]>();
 
-  for (let i = 0; i < tasksNeedingInference.length; i++) {
-    const task = tasksNeedingInference[i];
-    const tempId = `temp-${i}`;
-    const suggestion = suggestions[tempId];
+  for (const task of tasksNeedingInference) {
+    const suggestion = suggestions[task.tempId];
 
     if (!Array.isArray(suggestion) || suggestion.length === 0) continue;
 
@@ -193,7 +183,7 @@ const inferSkillsBeforeCreation = async (
     );
 
     if (validSkillIds.length > 0) {
-      inferredSkills.set(task.title, validSkillIds);
+      inferredSkills.set(task.tempId, validSkillIds);
     }
   }
 
