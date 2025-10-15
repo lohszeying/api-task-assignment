@@ -293,7 +293,6 @@ describe('taskController.assignDeveloperToTask', () => {
 describe('taskController.unassignDeveloperFromTask', () => {
   test('removes assignment and returns 204', async () => {
     prismaMock.task = {
-      findUnique: async () => ({ taskId: 'task-1' }),
       update: async () => null
     };
 
@@ -305,19 +304,18 @@ describe('taskController.unassignDeveloperFromTask', () => {
     assert.equal(getStatus(), 204);
   });
 
-  test('returns 404 when task is missing', async () => {
+  test('returns 204 even when task is missing (idempotent)', async () => {
     prismaMock.task = {
-      findUnique: async () => null,
       update: async () => null
     };
 
-    const { res, getStatus, getBody } = createMockResponse();
+    const { res, getStatus } = createMockResponse();
     const req = { params: { taskId: 'missing' } } as unknown as Request;
 
     await unassignDeveloperFromTask(req, res);
 
-    assert.equal(getStatus(), 404);
-    assert.deepEqual(getBody(), { message: 'Task not found.' });
+    // Idempotent operation - no error even if task doesn't exist
+    assert.equal(getStatus(), 204);
   });
 });
 

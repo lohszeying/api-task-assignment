@@ -43,18 +43,6 @@ test.afterEach(() => {
 });
 
 describe('assignDeveloperToTaskService', () => {
-  test('requires a developerId', async () => {
-    await assert.rejects(
-      assignDeveloperToTaskService('task-123', '   '),
-      (error: unknown) => {
-        assert.ok(error instanceof HttpError);
-        assert.equal(error.status, 400);
-        assert.equal(error.message, 'developerId is required.');
-        return true;
-      }
-    );
-  });
-
   test('throws when the task does not exist', async (t) => {
     const findUniqueMock = t.mock.fn(async () => null);
     prismaMock.task = { findUnique: findUniqueMock };
@@ -211,7 +199,8 @@ describe('assignDeveloperToTaskService', () => {
       findUnique: developerFindUniqueMock
     };
 
-    await assignDeveloperToTaskService('task-123', '  dev-1  ');
+    // Controller now trims, service receives clean data
+    await assignDeveloperToTaskService('task-123', 'dev-1');
 
     assert.equal(taskUpdateMock.mock.callCount(), 1);
     const updateArgs = taskUpdateMock.mock.calls[0].arguments[0];
@@ -225,34 +214,10 @@ describe('assignDeveloperToTaskService', () => {
 });
 
 describe('unassignDeveloperFromTaskService', () => {
-  test('throws when the task does not exist', async (t) => {
-    const taskFindUniqueMock = t.mock.fn(async () => null);
-    prismaMock.task = { findUnique: taskFindUniqueMock };
-
-    await assert.rejects(
-      unassignDeveloperFromTaskService('task-missing'),
-      (error: unknown) => {
-        assert.ok(error instanceof HttpError);
-        assert.equal(error.status, 404);
-        assert.equal(error.message, 'Task not found.');
-        return true;
-      }
-    );
-
-    assert.equal(taskFindUniqueMock.mock.callCount(), 1);
-  });
-
   test('clears the developer assignment', async (t) => {
-    const taskFindUniqueMock = t.mock.fn(
-      async () =>
-        ({
-          taskId: 'task-123'
-        }) as { taskId: string }
-    );
     const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => null);
 
     prismaMock.task = {
-      findUnique: taskFindUniqueMock,
       update: taskUpdateMock
     };
 
@@ -264,6 +229,18 @@ describe('unassignDeveloperFromTaskService', () => {
       where: { taskId: 'task-123' },
       data: { developerId: null }
     });
-    assert.equal(taskFindUniqueMock.mock.callCount(), 1);
+  });
+
+  test('succeeds even when task does not exist (idempotent)', async (t) => {
+    const taskUpdateMock = t.mock.fn(async (_args: TaskUpdateArgs) => null);
+
+    prismaMock.task = {
+      update: taskUpdateMock
+    };
+
+    // No error thrown - operation is idempotent
+    await unassignDeveloperFromTaskService('task-missing');
+
+    assert.equal(taskUpdateMock.mock.callCount(), 1);
   });
 });

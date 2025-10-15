@@ -41,13 +41,15 @@ export const createTask = async (req: Request, res: Response) => {
 
 export const assignDeveloperToTask = async (req: Request, res: Response) => {
   const { taskId } = req.params;
-  const developerId =
-    typeof (req.body as Record<string, unknown>)?.developerId === 'string'
-      ? ((req.body as Record<string, unknown>).developerId as string)
-      : undefined;
+  const { developerId } = req.body;
+
+  if (typeof developerId !== 'string' || !developerId.trim()) {
+    res.status(400).json({ message: 'developerId is required.' });
+    return;
+  }
 
   try {
-    await assignDeveloperToTaskService(taskId, developerId);
+    await assignDeveloperToTaskService(taskId, developerId.trim());
     res.status(204).send();
   } catch (error) {
     handleError(error, res, 'Failed to assign developer to task');

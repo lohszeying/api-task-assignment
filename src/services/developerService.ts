@@ -12,6 +12,7 @@ const parseSkillParam = (skillParam: string | undefined): number[] => {
     .map((token) => token.trim())
     .filter((token) => token.length > 0);
 
+  // If user sent a parameter but it's empty after trimming, that's an error
   if (tokens.length === 0) {
     throw new HttpError(400, 'Invalid skill query parameter');
   }
