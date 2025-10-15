@@ -8,10 +8,10 @@ run_dev: start_db
 	npm run dev
 
 start:
-	$(COMPOSE_PROJECT) up api_task_assignment
+	$(COMPOSE_PROJECT) up --build --force-recreate api_task_assignment
 
 start_dev:
-	$(COMPOSE_PROJECT) up api_task_assignment_dev
+	$(COMPOSE_PROJECT) up --build --force-recreate api_task_assignment_dev
 
 start_db:
 	$(COMPOSE_PROJECT) up -d api_task_assignment_db
@@ -26,7 +26,7 @@ run_seed: run_migration_up
 	npm run seed
 
 init_and_start: run_seed
-	$(COMPOSE_PROJECT) up api_task_assignment
+	$(COMPOSE_PROJECT) up --build --force-recreate api_task_assignment
 
 stop:
 	$(COMPOSE_PROJECT) down
