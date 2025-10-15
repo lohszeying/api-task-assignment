@@ -21,7 +21,7 @@ interface TaskForInference {
 }
 
 interface TaskCreationContext {
-  skillsById: Map<number, SkillDescriptor>;
+  skillNameById: Map<number, string>;
   inferredSkills: Map<string, number[]>;
 }
 
@@ -45,13 +45,13 @@ const normaliseSkills = (
       continue;
     }
 
-    const descriptor = context.skillsById.get(raw);
-    if (!descriptor) {
+    const skillName = context.skillNameById.get(raw);
+    if (!skillName) {
       invalidValues.push(raw);
       continue;
     }
 
-    matched.push(descriptor);
+    matched.push({ skillId: raw, skillName });
   }
 
   if (invalidValues.length > 0) {
@@ -153,7 +153,7 @@ const createTaskRecursive = async (
 
 const inferSkillsBeforeCreation = async (
   tasksNeedingInference: TaskForInference[],
-  skillsById: Map<number, SkillDescriptor>
+  skillNameById: Map<number, string>
 ): Promise<Map<string, number[]>> => {
   if (tasksNeedingInference.length === 0) {
     return new Map();
@@ -164,10 +164,11 @@ const inferSkillsBeforeCreation = async (
     description: task.title
   }));
 
-  const suggestions = await inferSkillsForTasks(
-    taskDescriptors,
-    Array.from(skillsById.values())
+  const skillDescriptors: SkillDescriptor[] = Array.from(skillNameById.entries()).map(
+    ([skillId, skillName]) => ({ skillId, skillName })
   );
+
+  const suggestions = await inferSkillsForTasks(taskDescriptors, skillDescriptors);
 
   const inferredSkills = new Map<string, number[]>();
 
@@ -180,7 +181,7 @@ const inferSkillsBeforeCreation = async (
       new Set(
         suggestion
           .map((value) => Number(value))
-          .filter((value) => Number.isInteger(value) && skillsById.has(value))
+          .filter((value) => Number.isInteger(value) && skillNameById.has(value))
       )
     );
 
@@ -204,17 +205,17 @@ export const createTaskWithSubtasks = async (
     select: { skillId: true, skillName: true }
   });
 
-  const skillsById = new Map(skills.map((skill) => [skill.skillId, skill as SkillDescriptor]));
+  const skillNameById = new Map(skills.map((skill) => [skill.skillId, skill.skillName]));
 
   // Step 1: Collect all tasks that need skill inference BEFORE creating anything
   const tasksNeedingInference = collectTasksNeedingInference(payload);
 
   // Step 2: Call Gemini to infer skills BEFORE starting transaction
-  const inferredSkills = await inferSkillsBeforeCreation(tasksNeedingInference, skillsById);
+  const inferredSkills = await inferSkillsBeforeCreation(tasksNeedingInference, skillNameById);
 
   // Step 3: Create all tasks with their skills in ONE transaction
   const context: TaskCreationContext = {
-    skillsById,
+    skillNameById,
     inferredSkills
   };
 
