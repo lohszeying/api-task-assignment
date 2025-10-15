@@ -20,13 +20,6 @@ export const assignDeveloperToTaskService = async (
   }
 
   const requiredSkillIds = task.skills.map((skill) => skill.skillId);
-  if (requiredSkillIds.length === 0) {
-    await prisma.task.update({
-      where: { taskId },
-      data: { developerId: developerIdClean }
-    });
-    return;
-  }
 
   const developer = await prisma.developer.findUnique({
     where: { developerId: developerIdClean },
@@ -37,8 +30,7 @@ export const assignDeveloperToTaskService = async (
     throw new HttpError(404, 'Developer not found.');
   }
 
-  const developerSkillIds = developer.skills.map((skill) => skill.skillId);
-  const developerSkillSet = new Set(developerSkillIds);
+  const developerSkillSet = new Set(developer.skills.map((skill) => skill.skillId));
   const hasAllSkills = requiredSkillIds.every((skillId) =>
     developerSkillSet.has(skillId)
   );

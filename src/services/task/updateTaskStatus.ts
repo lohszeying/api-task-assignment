@@ -5,24 +5,18 @@ import { TaskStatusId } from './constants';
 
 export const updateTaskStatusService = async (
   taskId: string,
-  statusId: number | string | undefined
+  statusId: number | undefined
 ): Promise<void> => {
-  if (statusId === undefined || statusId === null) {
+  if (statusId === undefined) {
     throw new HttpError(400, 'statusId is required.');
   }
 
-  if (
-    !(typeof statusId === 'number' && Number.isInteger(statusId)) &&
-    !/^[0-9]+$/.test(String(statusId).trim())
-  ) {
+  if (!Number.isInteger(statusId)) {
     throw new HttpError(400, 'statusId must be an integer.');
   }
 
-  const numericStatusId =
-    typeof statusId === 'number' ? statusId : Number(String(statusId).trim());
-
   const statusRecord = await prisma.taskStatus.findUnique({
-    where: { statusId: numericStatusId }
+    where: { statusId }
   });
 
   if (!statusRecord) {
@@ -38,7 +32,7 @@ export const updateTaskStatusService = async (
     throw new HttpError(404, 'Task not found.');
   }
 
-  if (statusRecord.statusId === TaskStatusId.Done) {
+  if (statusId === TaskStatusId.Done) {
     const [result] = await prisma.$queryRaw<{ pending_count: bigint }[]>(
       Prisma.sql`
         WITH RECURSIVE descendants AS (
@@ -64,6 +58,6 @@ export const updateTaskStatusService = async (
 
   await prisma.task.update({
     where: { taskId },
-    data: { statusId: statusRecord.statusId }
+    data: { statusId }
   });
 };
