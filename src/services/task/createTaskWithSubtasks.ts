@@ -18,7 +18,6 @@ export interface TaskCreationPayload {
 interface TaskForInference {
   tempId: string;
   title: string;
-  payload: TaskCreationPayload;
 }
 
 interface TaskCreationContext {
@@ -60,14 +59,13 @@ const normaliseSkills = (
 
 const collectTasksNeedingInference = (
   payload: TaskCreationPayload,
-  depth: number = 0,
   indexPath: number[] = []
 ): TaskForInference[] => {
   if (!payload || typeof payload !== 'object') {
     throw new HttpError(400, 'Invalid task payload.');
   }
 
-  if (depth > MAX_TASK_NESTING_DEPTH) {
+  if (indexPath.length > MAX_TASK_NESTING_DEPTH) {
     throw new HttpError(400, `Maximum task nesting depth of ${MAX_TASK_NESTING_DEPTH} levels exceeded.`);
   }
 
@@ -81,13 +79,13 @@ const collectTasksNeedingInference = (
 
   // If no skills provided, add to inference list
   if (!Array.isArray(payload.skills) || payload.skills.length === 0) {
-    tasks.push({ tempId, title, payload });
+    tasks.push({ tempId, title });
   }
 
   // Recursively collect from subtasks
   const subtasksPayload = Array.isArray(payload.subtasks) ? payload.subtasks : [];
   for (let i = 0; i < subtasksPayload.length; i++) {
-    tasks.push(...collectTasksNeedingInference(subtasksPayload[i], depth + 1, [...indexPath, i]));
+    tasks.push(...collectTasksNeedingInference(subtasksPayload[i], [...indexPath, i]));
   }
 
   return tasks;
@@ -100,8 +98,8 @@ const createTaskRecursive = async (
   context: TaskCreationContext,
   indexPath: number[] = []
 ): Promise<CreatedTaskResult> => {
-  const title = (payload.title as string).trim();
   const tempId = indexPath.join('-') || '0';
+  const title = payload.title as string;
 
   // Use inferred skills if available, otherwise use provided skills
   const skillsToUse = context.inferredSkills.get(tempId) || payload.skills;
