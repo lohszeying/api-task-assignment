@@ -39,6 +39,7 @@ Requires you to have `npm` to get type definitions. Run `npm i` to install libra
 	* 4.2. [UI](#UI)
 		* 4.2.1. [Homepage (Task list)](#HomepageTasklist)
 		* 4.2.2. [Create task](#Createtask)
+* 5. [Things done since Oct 14, and my thoughts on using Codex / Claude Code](#ThingsdonesinceOct14andmythoughtsonusingCodexClaudeCode)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -263,3 +264,13 @@ Currently, I've imposed a limit of max depth of up to 3 subtasks. This is becaus
 I've also added a cross button to allow user to be able to delete accidental added subtask, else it may be more complex to allow user to submit the form with empty task title.
 
 When "Create task" button is clicked, I've also disabled the form while the API is still firing. This is to avoid cases where user click on "Create task", and while API is still pending, user tries to edit the form which may lead to unintended behaviour.
+
+##  5. <a name='ThingsdonesinceOct14andmythoughtsonusingCodexClaudeCode'></a>Things done since Oct 14, and my thoughts on using Codex / Claude Code
+
+After the extension was granted, I still continued to work on refactoring with Codex. This time, I also added Claude Code into the mix because my weekly Codex limit was running out, and tried to use CLAUDE.md with Linus to review code and critize code. This is quite helpful in terms of pointing out what's the potential issue with the code, and this makes Claude Code be honest and frank about the code.
+
+I've also added tests using Codex, with Frontend using Vitest. However, when Codex was adding test for frontend, it used an older version of Vitest and also older version of testing library. When I tried to remove node_modules and install again, I faced resolving dependency issues. Claude code suggested to downgrade React to 18. I just installed the latest version of testing library instead, and this solved the issue.
+
+One thing I've noticed while working with Codex / Claude Code during the last 2 days - doing refactors is not fun. Codex / Claude Code can speed up the prototype development as evident in the initial 3 days, but it is a pain to fix issues later on. Even after all these refactors, I will still have to check the changes which eats up my time. While doing the refactors, sometimes it also broke things, although using Claude Code with Linus edition `CLAUDE.md` lets Claude find out what is the potential issue with the code.
+
+Going back, if there is 1 thing I would love to change if I were to still continue to use tools such as Codex / Claude Code, I want to try doing this with spec driven development. It requires some investment into writing specs initially, but subsequently it would probably help a lot since the plans are already written out.
