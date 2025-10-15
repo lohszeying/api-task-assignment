@@ -20,6 +20,13 @@ export const assignDeveloperToTaskService = async (
   }
 
   const requiredSkillIds = task.skills.map((skill) => skill.skillId);
+  if (requiredSkillIds.length === 0) {
+    await prisma.task.update({
+      where: { taskId },
+      data: { developerId: developerIdClean }
+    });
+    return;
+  }
 
   const developer = await prisma.developer.findUnique({
     where: { developerId: developerIdClean },
@@ -60,4 +67,3 @@ export const unassignDeveloperFromTaskService = async (taskId: string): Promise<
     data: { developerId: null }
   });
 };
-

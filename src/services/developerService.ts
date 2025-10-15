@@ -13,7 +13,7 @@ const parseSkillParam = (skillParam: string | undefined): number[] => {
     .filter((token) => token.length > 0);
 
   if (tokens.length === 0) {
-    return [];
+    throw new HttpError(400, 'Invalid skill query parameter');
   }
 
   const ids = tokens.map((token) => Number(token));
