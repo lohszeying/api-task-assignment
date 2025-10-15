@@ -8,16 +8,6 @@ import {
 } from '../services/task';
 import { handleError } from '../utils/error';
 
-const extractParentTaskId = (req: Request): string | null => {
-  const paramId = typeof req.params.taskId === 'string' ? req.params.taskId : undefined;
-  const bodyId =
-    req.body && typeof (req.body as Record<string, unknown>).parentTaskId === 'string'
-      ? ((req.body as Record<string, unknown>).parentTaskId as string)
-      : undefined;
-
-  return paramId || bodyId || null;
-};
-
 export const getTasks = async (_req: Request, res: Response) => {
   try {
     const tasks = await fetchAllTasks();
@@ -28,10 +18,8 @@ export const getTasks = async (_req: Request, res: Response) => {
 };
 
 export const createTask = async (req: Request, res: Response) => {
-  const parentTaskId = extractParentTaskId(req);
-
   try {
-    const result = await createTaskWithSubtasks(req.body, parentTaskId);
+    const result = await createTaskWithSubtasks(req.body);
     res.status(201).json(result);
   } catch (error) {
     handleError(error, res, 'Failed to create task.');

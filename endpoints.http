@@ -9,7 +9,7 @@ GET {{baseUrl}}/skills
 ###
 // Get developers
 // Optional query parma: skill, eg. ?skill=1 or ?skill=1,2
-GET {{baseUrl}}/developers
+GET {{baseUrl}}/developers?skills=asdasd
 
 ###
 // Get all statuses
@@ -33,7 +33,6 @@ POST {{baseUrl}}/tasks
 {
     "title": "Mock title", // Required
     "skills": [1], // Field optional. If none, use LLM. Means under thsi tasks endpoint, should also call LLM?
-    "parentTaskId": "xxx-xxx", // Optional. If creating a child subtask standalone (we may not need it though?)
     // subtasks is optional, only when we want to create child task in one shot
     "subtasks": [
         {

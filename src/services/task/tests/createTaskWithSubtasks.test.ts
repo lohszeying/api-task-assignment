@@ -51,7 +51,7 @@ test.afterEach(() => {
 describe('createTaskWithSubtasks', () => {
   test('requires the request body to be an object', async () => {
     await assert.rejects(
-      createTaskWithSubtasks(null as unknown as Record<string, unknown>, null),
+      createTaskWithSubtasks(null as unknown as Record<string, unknown>),
       (error: unknown) => {
         assert.ok(error instanceof HttpError);
         assert.equal(error.status, 400);
@@ -59,37 +59,6 @@ describe('createTaskWithSubtasks', () => {
         return true;
       }
     );
-  });
-
-  test('throws when parent task is missing', async (t) => {
-    const skillFindManyMock = t.mock.fn(async () => []);
-    const parentLookupMock = t.mock.fn(async () => null);
-
-    prismaMock.skill = { findMany: skillFindManyMock };
-    prismaMock.$transaction = (async (callback) => {
-      return callback({
-        task: {
-          findUnique: parentLookupMock,
-          create: async () => {
-            throw new Error('create should not be reached when parent is missing');
-          }
-        },
-        taskSkill: {}
-      });
-    }) as PrismaTransaction;
-
-    await assert.rejects(
-      createTaskWithSubtasks({ title: 'Child task' }, 'parent-task'),
-      (error: unknown) => {
-        assert.ok(error instanceof HttpError);
-        assert.equal(error.status, 404);
-        assert.equal(error.message, 'Parent task not found.');
-        return true;
-      }
-    );
-
-    assert.equal(skillFindManyMock.mock.callCount(), 1);
-    assert.equal(parentLookupMock.mock.callCount(), 1);
   });
 
   test('rejects payloads referencing unknown skills', async (t) => {
@@ -106,7 +75,7 @@ describe('createTaskWithSubtasks', () => {
     }) as PrismaTransaction;
 
     await assert.rejects(
-      createTaskWithSubtasks({ title: 'Feature', skills: [1, 999, 1] }, null),
+      createTaskWithSubtasks({ title: 'Feature', skills: [1, 999, 1] }),
       (error: unknown) => {
         assert.ok(error instanceof HttpError);
         assert.equal(error.status, 400);

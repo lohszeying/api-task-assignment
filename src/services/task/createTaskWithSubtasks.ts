@@ -194,8 +194,7 @@ const inferSkillsBeforeCreation = async (
 };
 
 export const createTaskWithSubtasks = async (
-  payload: TaskCreationPayload,
-  parentTaskId: string | null
+  payload: TaskCreationPayload
 ): Promise<CreatedTaskResult> => {
   if (!payload || typeof payload !== 'object') {
     throw new HttpError(400, 'Request body must be an object.');
@@ -220,17 +219,6 @@ export const createTaskWithSubtasks = async (
   };
 
   return await prisma.$transaction(async (tx) => {
-    if (parentTaskId) {
-      const parent = await tx.task.findUnique({
-        where: { taskId: parentTaskId },
-        select: { taskId: true }
-      });
-
-      if (!parent) {
-        throw new HttpError(404, 'Parent task not found.');
-      }
-    }
-
-    return createTaskRecursive(payload, parentTaskId, tx, context);
+    return createTaskRecursive(payload, null, tx, context);
   });
 };
